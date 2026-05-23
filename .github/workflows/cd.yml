@@ -1,0 +1,143 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Backend CI", "Frontend CI"]
+    types:
+      - completed
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Choose action: deploy or rollback'
+        required: true
+        default: 'deploy'
+        type: choice
+        options:
+        - deploy
+        - rollback
+
+jobs:
+  deploy-staging:
+    name: CD - Deploy Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate .env file from Secrets
+      env:
+        IDENTITY_DB: ${{ secrets.IDENTITY_DB }}
+        CATALOG_DB: ${{ secrets.CATALOG_DB }}
+        ORDERING_DB: ${{ secrets.ORDERING_DB }}
+        REDIS_CONNECTION: ${{ secrets.REDIS_CONNECTION }}
+        MONGO_CONNECTION: ${{ secrets.MONGO_CONNECTION }}
+        MONGO_CONNECTION_ATLAS: ${{ secrets.MONGO_CONNECTION_ATLAS }}
+        MONGO_DB_DISCOUNT: ${{ secrets.MONGO_DB_DISCOUNT }}
+        MONGO_DB_CHAT: ${{ secrets.MONGO_DB_CHAT }}
+        JWT_RSA_PRIVATE_KEY: ${{ secrets.JWT_RSA_PRIVATE_KEY }}
+        JWT_RSA_PUBLIC_KEY: ${{ secrets.JWT_RSA_PUBLIC_KEY }}
+        SMTP_HOST: ${{ secrets.SMTP_HOST }}
+        SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        SMTP_FROM: ${{ secrets.SMTP_FROM }}
+        SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
+        CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+        CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+        CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+      run: |
+        cat <<EOF > .env.deploy
+        IDENTITY_DB=$IDENTITY_DB
+        CATALOG_DB=$CATALOG_DB
+        ORDERING_DB=$ORDERING_DB
+        REDIS_CONNECTION=$REDIS_CONNECTION
+        MONGO_CONNECTION=$MONGO_CONNECTION
+        MONGO_CONNECTION_ATLAS=$MONGO_CONNECTION_ATLAS
+        MONGO_DB_DISCOUNT=$MONGO_DB_DISCOUNT
+        MONGO_DB_CHAT=$MONGO_DB_CHAT
+        JWT_RSA_PRIVATE_KEY=$JWT_RSA_PRIVATE_KEY
+        JWT_RSA_PUBLIC_KEY=$JWT_RSA_PUBLIC_KEY
+        SMTP_HOST=$SMTP_HOST
+        SMTP_PORT=$SMTP_PORT
+        SMTP_USERNAME=$SMTP_USERNAME
+        SMTP_PASSWORD=$SMTP_PASSWORD
+        SMTP_FROM=$SMTP_FROM
+        SMTP_FROM_NAME=$SMTP_FROM_NAME
+        CLOUDINARY_CLOUD_NAME=$CLOUDINARY_CLOUD_NAME
+        CLOUDINARY_API_KEY=$CLOUDINARY_API_KEY
+        CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET
+        FRONTEND_URL=$FRONTEND_URL
+        EOF
+
+    - name: Copy K8s Manifests and .env to Azure VM
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.AZURE_VM_SSH_KEY }}
+        source: "k8s/*,.env.deploy"
+        target: "~/deploy-staging/"
+
+    - name: Deploy to K3s Staging via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.AZURE_VM_SSH_KEY }}
+        script: |
+          # Fix K3s permission issue for azureuser
+          sudo chmod 644 /etc/rancher/k3s/k3s.yaml || true
+          
+          # Create staging namespace if not exists
+          kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Create ACR Image Pull Secret so K8s can pull the image
+          kubectl create secret docker-registry acr-secret \
+            --docker-server=${{ secrets.ACR_LOGIN_SERVER }} \
+            --docker-username=${{ secrets.ACR_USERNAME }} \
+            --docker-password=${{ secrets.ACR_PASSWORD }} \
+            --namespace=staging \
+            --dry-run=client -o yaml | kubectl apply -f -
+          
+          cd ~/deploy-staging/k8s
+          
+          # Replace image placeholders with actual ACR server
+          find . -type f -name "*.yaml" -exec sed -i "s|__ACR_LOGIN_SERVER__|${{ secrets.ACR_LOGIN_SERVER }}|g" {} +
+          
+          # Apply configs, backend, frontend and ingress manifests
+          kubectl apply -f config/ -n staging
+          
+          # Create app-secrets from the dynamically generated .env file
+          kubectl create secret generic app-secrets --from-env-file=../.env.deploy -n staging --dry-run=client -o yaml | kubectl apply -f -
+          
+          kubectl apply -f backend/ -n staging
+          kubectl apply -f frontend/ -n staging
+          kubectl apply -f ingress/ -n staging
+          
+          # Force restart all deployments so they pick up any new Secret changes
+          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service frontend; do
+            kubectl rollout restart deployment/$svc -n staging
+          done
+          
+          # Check rollout status for all deployments
+          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service frontend; do
+            kubectl rollout status deployment/$svc -n staging
+          done
+          
+          # Remove the temporary .env file from the server for security
+          rm -f ~/deploy-staging/.env.deploy
+
+    - name: Discord Notification
+      if: always()
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        title: "CD Deployment Status (Staging)"
+        description: "Deployment completed for environment Staging"
+        color: 0xffff00
