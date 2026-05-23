@@ -28,7 +28,6 @@ services:
     networks:
       - backend
 
-
   # =========================
   # CATALOG SERVICE
   # =========================

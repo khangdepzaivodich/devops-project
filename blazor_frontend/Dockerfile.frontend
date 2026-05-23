@@ -15,7 +15,6 @@ RUN dotnet restore blazor_frontend.slnx
 # Copy the rest of the source code
 COPY . .
 
-
 # Install NPM dependencies inside the project folder where package.json is located
 WORKDIR /src/blazor_frontend
 RUN npm ci
