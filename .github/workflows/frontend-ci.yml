@@ -65,7 +65,7 @@ jobs:
       run: |
         SONAR_ORG_ARG=""
         if [ ! -z "${{ secrets.SONAR_ORGANIZATION }}" ]; then
-          SONAR_ORG_ARG="/o:\"${{ secrets.SONAR_ORGANIZATION }}\""
+          SONAR_ORG_ARG="/o:${{ secrets.SONAR_ORGANIZATION }}"
         fi
         
         SONAR_HOST="${{ secrets.SONAR_HOST_URL }}"
