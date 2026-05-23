@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basket-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basket-service
+  template:
+    metadata:
+      labels:
+        app: basket-service
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: basket-service
+        image: __ACR_LOGIN_SERVER__/basket-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: Redis__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: REDIS_CONNECTION
+        - name: ApiSettings__CatalogUrl
+          value: "http://catalog-service:8080"
+        - name: ApiSettings__IdentityUrl
+          value: "http://identity-service:8080"
+        - name: JwtSettings__RsaPublicKey
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_RSA_PUBLIC_KEY
+        - name: FrontendUrl
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: FRONTEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: basket-service
+spec:
+  selector:
+    app: basket-service
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discount-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discount-service
+  template:
+    metadata:
+      labels:
+        app: discount-service
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: discount-service
+        image: __ACR_LOGIN_SERVER__/discount-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: DiscountDatabase__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: MONGO_CONNECTION_ATLAS
+        - name: DiscountDatabase__DatabaseName
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: MONGO_DB_DISCOUNT
+        - name: JwtSettings__RsaPublicKey
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_RSA_PUBLIC_KEY
+        - name: FrontendUrl
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: FRONTEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: discount-service
+spec:
+  selector:
+    app: discount-service
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+

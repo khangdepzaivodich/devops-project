@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ordering-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ordering-service
+  template:
+    metadata:
+      labels:
+        app: ordering-service
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: ordering-service
+        image: __ACR_LOGIN_SERVER__/ordering-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: ORDERING_DB
+        - name: JwtSettings__RsaPublicKey
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_RSA_PUBLIC_KEY
+        - name: ApiSettings__CatalogUrl
+          value: "http://catalog-service:8080"
+        - name: ApiSettings__DiscountUrl
+          value: "http://discount-service:8080"
+        - name: FrontendUrl
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: FRONTEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ordering-service
+spec:
+  selector:
+    app: ordering-service
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+

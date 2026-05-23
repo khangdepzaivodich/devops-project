@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-service
+  template:
+    metadata:
+      labels:
+        app: identity-service
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: identity-service
+        image: __ACR_LOGIN_SERVER__/identity-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: IDENTITY_DB
+        - name: JwtSettings__RsaPrivateKey
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_RSA_PRIVATE_KEY
+        - name: JwtSettings__RsaPublicKey
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: JWT_RSA_PUBLIC_KEY
+        - name: SmtpSettings__Host
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SMTP_HOST
+        - name: SmtpSettings__Port
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SMTP_PORT
+        - name: SmtpSettings__Username
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SMTP_USERNAME
+        - name: SmtpSettings__Password
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SMTP_PASSWORD
+        - name: SmtpSettings__From
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SMTP_FROM
+        - name: SmtpSettings__FromDisplayName
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SMTP_FROM_NAME
+        - name: CloudinarySettings__CloudName
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: CLOUDINARY_CLOUD_NAME
+        - name: CloudinarySettings__ApiKey
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: CLOUDINARY_API_KEY
+        - name: CloudinarySettings__ApiSecret
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: CLOUDINARY_API_SECRET
+        - name: FrontendUrl
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: FRONTEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+spec:
+  selector:
+    app: identity-service
+  ports:
+  - port: 8080
+    targetPort: 8080
+
+

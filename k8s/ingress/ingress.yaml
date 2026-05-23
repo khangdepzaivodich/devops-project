@@ -1,0 +1,197 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      # Identity API
+      - path: /api/Auth
+        pathType: Prefix
+        backend:
+          service:
+            name: identity-service
+            port:
+              number: 8080
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: identity-service
+            port:
+              number: 8080
+      - path: /api/User
+        pathType: Prefix
+        backend:
+          service:
+            name: identity-service
+            port:
+              number: 8080
+      - path: /api/user
+        pathType: Prefix
+        backend:
+          service:
+            name: identity-service
+            port:
+              number: 8080
+      # Ordering API
+      - path: /api/DonHang
+        pathType: Prefix
+        backend:
+          service:
+            name: ordering-service
+            port:
+              number: 8080
+      - path: /api/donhang
+        pathType: Prefix
+        backend:
+          service:
+            name: ordering-service
+            port:
+              number: 8080
+      # Discount API
+      - path: /api/MaGiamGia
+        pathType: Prefix
+        backend:
+          service:
+            name: discount-service
+            port:
+              number: 8080
+      - path: /api/magiamgia
+        pathType: Prefix
+        backend:
+          service:
+            name: discount-service
+            port:
+              number: 8080
+      # Basket API
+      - path: /api/Basket
+        pathType: Prefix
+        backend:
+          service:
+            name: basket-service
+            port:
+              number: 8080
+      - path: /api/basket
+        pathType: Prefix
+        backend:
+          service:
+            name: basket-service
+            port:
+              number: 8080
+      # Chat API & SignalR
+      - path: /api/Chat
+        pathType: Prefix
+        backend:
+          service:
+            name: chat-service
+            port:
+              number: 8080
+      - path: /api/chat
+        pathType: Prefix
+        backend:
+          service:
+            name: chat-service
+            port:
+              number: 8080
+      - path: /api/Values
+        pathType: Prefix
+        backend:
+          service:
+            name: chat-service
+            port:
+              number: 8080
+      - path: /api/values
+        pathType: Prefix
+        backend:
+          service:
+            name: chat-service
+            port:
+              number: 8080
+      - path: /chat-hub
+        pathType: Prefix
+        backend:
+          service:
+            name: chat-service
+            port:
+              number: 8080
+      # Catalog API
+      - path: /api/ChiTietSanPham
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/chitiet
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/DanhMuc
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/danhmuc
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/LoaiDanhMuc
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/loaidanhmuc
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/Photo
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/photo
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/SanPham
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      - path: /api/sanpham
+        pathType: Prefix
+        backend:
+          service:
+            name: catalog-service
+            port:
+              number: 8080
+      # Frontend (Mặc định bắt các request còn lại)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
