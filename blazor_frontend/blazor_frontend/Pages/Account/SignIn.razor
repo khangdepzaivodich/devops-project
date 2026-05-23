@@ -92,12 +92,31 @@
 
             await MergeGuestCartAsync(res.UserId.ToString());
 
-            Nav.NavigateTo(string.IsNullOrWhiteSpace(ReturnUrl) ? "/" : ReturnUrl);
+            Nav.NavigateTo(GetSafeReturnUrl());
         }
         finally
         {
             isSubmitting = false;
         }
+    }
+
+    private string GetSafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+            return "/";
+
+        var url = ReturnUrl.Trim();
+
+        // Only allow relative paths starting with '/' that are not protocol-relative (//)
+        // and do not contain scheme markers (:) or control characters.
+        if (!url.StartsWith('/') || url.StartsWith("//") || url.Contains(':'))
+            return "/";
+
+        // Block any backslash tricks (e.g. "/\evil.com")
+        if (url.Contains('\\'))
+            return "/";
+
+        return url;
     }
 
     private async Task MergeGuestCartAsync(string userId)
