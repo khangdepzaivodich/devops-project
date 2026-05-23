@@ -319,9 +319,6 @@
         ApDungCho = "TatCa"
     };
 
-    private Dictionary<Guid, string> loaiDanhMucNames = new();
-    private Dictionary<Guid, string> danhMucNames = new();
-    private Dictionary<Guid, string> sanPhamNames = new();
     private Guid? editingDiscountId = null;
 
     protected override async Task OnInitializedAsync()
@@ -349,10 +346,6 @@
         loaiDanhMucs = (await CategoryService.GetAllLoaiDanhMucAsync()).ToList();
         danhMucs = (await CategoryService.GetAllAsync()).ToList();
         sanPhams = (await ProductService.GetAllAsync()).ToList();
-
-        loaiDanhMucNames = loaiDanhMucs.ToDictionary(x => x.MaLDM, x => x.TenLDM);
-        danhMucNames = danhMucs.ToDictionary(x => x.MaDM, x => x.TenDM);
-        sanPhamNames = sanPhams.ToDictionary(x => x.MaSP, x => x.TenSP);
     }
 
     private void ToggleForm() 

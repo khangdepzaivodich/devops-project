@@ -94,7 +94,6 @@
     private string staffAvatar = "";
     private string userAvatar = "";
     private string newMessage = "";
-    private string hoTen = "";
     private List<ChatMessage> messages = new();
 
     protected override async Task OnInitializedAsync()
@@ -105,77 +104,83 @@
         await ChatService.InitializeAsync();
 
         userAvatar = AuthState.AvatarUrl;
-        hoTen = AuthState.HoTen;
 
-        var session = await JS.InvokeAsync<string>("localStorage.getItem", "chat_session_id");
-        var userId = AuthState.UserId;
-
-        if (AuthState.IsAuthenticated)
-        {
-            // Bắt buộc xóa ID cũ để tránh dùng lại phiên khách
-            await JS.InvokeVoidAsync("localStorage.removeItem", "chat_session_id");
-            session = null;
-
-            var serverSession = await ChatService.GetLatestActiveSessionAsync(userId.ToString());
-            if (serverSession != null)
-            {
-                session = serverSession.Id.ToString();
-                await JS.InvokeVoidAsync("localStorage.setItem", "chat_session_id", session);
-            }
-            else
-            {
-                session = await ChatService.CreateNewChatSessionAsync(userId.ToString(), "USER");
-                if (!string.IsNullOrEmpty(session))
-                {
-                    await JS.InvokeVoidAsync("localStorage.setItem", "chat_session_id", session);
-                }
-            }
-        }
+        var session = await ResolveSessionAsync();
 
         if (!string.IsNullOrEmpty(session))
         {
             currentSessionId = session;
-            await ChatService.JoinChatSessionAsync(currentSessionId);
-
-            // Lấy thông tin phiên để lấy tên Staff
-            var sessionInfo = await ChatService.GetChatSessionAsync(Guid.Parse(currentSessionId));
-            if (sessionInfo != null)
-            {
-                staffName = sessionInfo.StaffHoTen;
-                staffAvatar = sessionInfo.StaffAvatar;
-                if (staffName == "Administrator") staffName = "Nhân viên tư vấn";
-                StateHasChanged();
-            }
-            
-            var history = await JS.InvokeAsync<string>("localStorage.getItem", $"chat_history_{currentSessionId}");
-            if (string.IsNullOrEmpty(history))
-            {
-                // Lấy từ server nếu local trống
-                var serverMsgs = await ChatService.GetChatHistoryAsync(Guid.Parse(currentSessionId));
-                if (serverMsgs != null && serverMsgs.Any())
-                {
-                    messages = serverMsgs
-                        .Where(m => !m.IsInternalNote)
-                        .Select(m => new ChatMessage { 
-                        Text = m.NoiDung, 
-                        IsMine = m.SenderType == "USER" || m.SenderType == "GUEST",
-                        Timestamp = m.ThoiGianGui 
-                    }).ToList();
-                    await SaveMessages();
-                }
-            }
-            else
-            {
-                try { messages = JsonSerializer.Deserialize<List<ChatMessage>>(history) ?? new(); }
-                catch { messages = new(); }
-            }
-
-            // Sync identity
-            await TryUpgradeSession();
+            await InitializeSessionDataAsync();
         }
         
         await Task.Delay(500);
         await ScrollToBottom();
+    }
+
+    private async Task<string?> ResolveSessionAsync()
+    {
+        var session = await JS.InvokeAsync<string>("localStorage.getItem", "chat_session_id");
+
+        if (!AuthState.IsAuthenticated)
+            return session;
+
+        // Bắt buộc xóa ID cũ để tránh dùng lại phiên khách
+        await JS.InvokeVoidAsync("localStorage.removeItem", "chat_session_id");
+
+        var userId = AuthState.UserId.ToString();
+        var serverSession = await ChatService.GetLatestActiveSessionAsync(userId);
+
+        session = serverSession != null
+            ? serverSession.Id.ToString()
+            : await ChatService.CreateNewChatSessionAsync(userId, "USER");
+
+        if (!string.IsNullOrEmpty(session))
+            await JS.InvokeVoidAsync("localStorage.setItem", "chat_session_id", session);
+
+        return session;
+    }
+
+    private async Task InitializeSessionDataAsync()
+    {
+        await ChatService.JoinChatSessionAsync(currentSessionId);
+        await LoadStaffInfoAsync();
+        await LoadChatHistoryAsync();
+        await TryUpgradeSession();
+    }
+
+    private async Task LoadStaffInfoAsync()
+    {
+        var sessionInfo = await ChatService.GetChatSessionAsync(Guid.Parse(currentSessionId));
+        if (sessionInfo == null) return;
+
+        staffName = sessionInfo.StaffHoTen;
+        staffAvatar = sessionInfo.StaffAvatar;
+        if (staffName == "Administrator") staffName = "Nhân viên tư vấn";
+        StateHasChanged();
+    }
+
+    private async Task LoadChatHistoryAsync()
+    {
+        var history = await JS.InvokeAsync<string>("localStorage.getItem", $"chat_history_{currentSessionId}");
+        if (!string.IsNullOrEmpty(history))
+        {
+            try { messages = JsonSerializer.Deserialize<List<ChatMessage>>(history) ?? new(); }
+            catch { messages = new(); }
+            return;
+        }
+
+        var serverMsgs = await ChatService.GetChatHistoryAsync(Guid.Parse(currentSessionId));
+        if (serverMsgs != null && serverMsgs.Any())
+        {
+            messages = serverMsgs
+                .Where(m => !m.IsInternalNote)
+                .Select(m => new ChatMessage { 
+                    Text = m.NoiDung, 
+                    IsMine = m.SenderType == "USER" || m.SenderType == "GUEST",
+                    Timestamp = m.ThoiGianGui 
+                }).ToList();
+            await SaveMessages();
+        }
     }
 
     private void HandleMessageReceived(blazor_frontend.Models.ChatMessageDto tinNhan)

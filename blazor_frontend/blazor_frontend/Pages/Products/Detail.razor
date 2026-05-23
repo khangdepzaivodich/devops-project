@@ -54,10 +54,10 @@
 
                 <div id="thumb-scroll" class="flex-1 flex flex-col gap-3 overflow-y-auto snap-y scroll-smooth" style="max-height: 420px; scrollbar-width: none; -ms-overflow-style: none;">
                     <style>#thumb-scroll::-webkit-scrollbar { display: none; }</style>
-                    @for (var i = 0; i < thumbnails.Length; i++)
+                    @for (var i = 0; i < GetThumbnails().Length; i++)
                     {
                         var index = i;
-                        var thumbnail = thumbnails[index];
+                        var thumbnail = GetThumbnails()[index];
                         <button id="thumb-@index" @onclick="() => SelectMedia(index)" class="snap-start shrink-0 h-24 relative border-2 transition-all overflow-hidden @(selectedMediaIndex == index ? "border-black shadow-md" : "border-transparent opacity-70 hover:opacity-100")">
                             <img src="@thumbnail" class="w-full h-full object-cover object-top" onerror="this.src='/product1.jpg';" />
                         </button>
@@ -379,7 +379,7 @@
         }
     }
 
-    private string[] thumbnails => (currentProduct?.ChiTietSanPhams ?? new List<ChiTietSanPhamDto>())
+    private string[] GetThumbnails() => (currentProduct?.ChiTietSanPhams ?? new List<ChiTietSanPhamDto>())
         .Select(x => x.Anh!)
         .Where(x => !string.IsNullOrWhiteSpace(x))
         .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -389,7 +389,7 @@
             _ => ["product1.jpg"]
         };
 
-    private string CurrentImage => thumbnails[Math.Clamp(selectedMediaIndex, 0, thumbnails.Length - 1)];
+    private string CurrentImage => GetThumbnails()[Math.Clamp(selectedMediaIndex, 0, GetThumbnails().Length - 1)];
 
     private IEnumerable<ChiTietSanPhamDto> Variants => currentProduct?.ChiTietSanPhams ?? new List<ChiTietSanPhamDto>();
     private IEnumerable<string> AvailableColors => Variants.Select(x => x.Mau).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase);
@@ -410,18 +410,18 @@
 
     private async Task SelectMedia(int index, bool skipColorSync = false)
     {
-        if (thumbnails.Length == 0)
+        if (GetThumbnails().Length == 0)
         {
             selectedMediaIndex = 0;
             return;
         }
 
-        selectedMediaIndex = Math.Clamp(index, 0, thumbnails.Length - 1);
+        selectedMediaIndex = Math.Clamp(index, 0, GetThumbnails().Length - 1);
         
         // Nếu click vào ảnh, tự động chọn màu tương ứng (nếu chưa chọn hoặc skipColorSync = false)
         if (!skipColorSync)
         {
-            var clickedImg = thumbnails[selectedMediaIndex];
+            var clickedImg = GetThumbnails()[selectedMediaIndex];
             var variantWithThisImg = Variants.FirstOrDefault(v => string.Equals(v.Anh, clickedImg, StringComparison.OrdinalIgnoreCase));
             if (variantWithThisImg != null && !string.IsNullOrEmpty(variantWithThisImg.Mau))
             {
@@ -444,15 +444,15 @@
 
     private async Task PrevMedia()
     {
-        if (thumbnails.Length == 0) return;
-        int newIndex = selectedMediaIndex > 0 ? selectedMediaIndex - 1 : thumbnails.Length - 1;
+        if (GetThumbnails().Length == 0) return;
+        int newIndex = selectedMediaIndex > 0 ? selectedMediaIndex - 1 : GetThumbnails().Length - 1;
         await SelectMedia(newIndex);
     }
 
     private async Task NextMedia()
     {
-        if (thumbnails.Length == 0) return;
-        int newIndex = selectedMediaIndex < thumbnails.Length - 1 ? selectedMediaIndex + 1 : 0;
+        if (GetThumbnails().Length == 0) return;
+        int newIndex = selectedMediaIndex < GetThumbnails().Length - 1 ? selectedMediaIndex + 1 : 0;
         await SelectMedia(newIndex);
     }
 
@@ -466,7 +466,7 @@
 
         if (!string.IsNullOrEmpty(firstImageForColor))
         {
-            var imgIndex = Array.FindIndex(thumbnails, t => string.Equals(t, firstImageForColor, StringComparison.OrdinalIgnoreCase));
+            var imgIndex = Array.FindIndex(GetThumbnails(), t => string.Equals(t, firstImageForColor, StringComparison.OrdinalIgnoreCase));
             if (imgIndex >= 0)
             {
                 await SelectMedia(imgIndex, skipColorSync: true);

@@ -228,7 +228,7 @@
                     {
                         <!-- Products with Overlay Loading -->
                         <div @key="filterVersion" class="animate-fade-up transition-all duration-500 @(isLoading ? "opacity-40 grayscale-50 pointer-events-none" : "opacity-100")">
-                            <ProductList Items="DisplayProducts" 
+                            <ProductList Items="GetDisplayProducts()" 
                                          CurrentPage="currentPage" 
                                          TotalPages="totalPages" 
                                          OnPageChanged="HandlePageChanged" />
@@ -255,7 +255,7 @@
     [Parameter, SupplyParameterFromQuery(Name = "q")] public string? SearchQueryParam { get; set; }
 
     private List<SanPhamDto> products = new();
-    private List<ProductList.ProductDto> DisplayProducts => products.Select(p => {
+    private List<ProductList.ProductDto> GetDisplayProducts() => products.Select(p => {
         var firstDetail = p.ChiTietSanPhams.FirstOrDefault();
         var displayPriceVal = p.GiaMin > 0 ? p.GiaMin : (firstDetail?.Gia ?? 0);
         var colors = p.ChiTietSanPhams
