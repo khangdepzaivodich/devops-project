@@ -1,0 +1,500 @@
+@page "/admin/users"
+@using blazor_frontend.Models.BackendDTOs
+@inject blazor_frontend.Services.IUserService userService
+@inject SweetAlertService Swal
+<PageTitle>Quản lý Người dùng</PageTitle>
+
+<div class="bg-white rounded-lg shadow-sm w-full p-6 flex flex-col">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Quản lý Tài khoản</h2>
+            <p class="text-sm text-gray-500 mt-1">Quản lý thông tin và phân quyền cho nhân viên, khách hàng</p>
+        </div>
+        <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2 shadow-sm" @onclick="NewUser">
+            <i class="ph ph-user-plus text-xl"></i>
+            Thêm tài khoản
+        </button>
+    </div>
+
+    <!-- Bộ lọc & Tìm kiếm -->
+    <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+        <div class="flex-1 relative">
+            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+            <input type="text" @bind="searchQuery" @bind:event="oninput" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+            placeholder="Tìm kiếm theo Tên, Email, SĐT...">
+        </div>
+        <div class="w-full md:w-48">
+            <select @bind="filterRole" class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer">
+                <option value="">Tất cả Vai trò</option>
+                <option value="ADMIN">Quản trị viên</option>
+                <option value="STAFF">Nhân viên</option>
+                <option value="CUSTOMER">Khách hàng</option>
+            </select>
+        </div>
+        <div class="w-full md:w-48">
+            <select @bind="filterStatus" class="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer">
+                <option value="">Tất cả Trạng thái</option>
+                <option value="Active">Đang hoạt động</option>
+                <option value="Blocked">Đã khóa</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Bảng Dữ liệu -->
+    <div class="overflow-x-auto border border-gray-200 rounded-lg custom-scrollbar">
+        <table class="min-w-full text-left border-collapse table-auto">
+            <thead>
+                <tr class="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider whitespace-nowrap">
+                    <th class="p-4 pl-6 font-semibold border-b border-gray-200">Tài khoản</th>
+                    <th class="p-4 font-semibold border-b border-gray-200">Vai trò</th>
+                    <th class="p-4 font-semibold border-b border-gray-200">Dữ liệu liên hệ</th>
+                    <th class="p-4 font-semibold border-b border-gray-200 text-center">Trạng Thái</th>
+                    <th class="p-4 pr-6 font-semibold border-b border-gray-200 text-right">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-700 text-sm">
+                @if (FilteredUsers == null)
+                {
+                    <tr><td colspan="5" class="p-4 text-center">Đang tải dữ liệu...</td></tr>
+                }
+                else if (!FilteredUsers.Any())
+                {
+                    <tr><td colspan="5" class="p-4 text-center">Không tìm thấy tài khoản nào</td></tr>
+                }
+                else
+                {
+                    @foreach (var user in FilteredUsers)
+                    {
+                        var isBlocked = user.TrangThai == "Blocked";
+                        <tr class="border-b border-gray-100 hover:bg-blue-50/50 transition-colors @(isBlocked ? "bg-gray-50/50" : "") whitespace-nowrap">
+                            <td class="p-4 pl-6">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(user.HoTen)&background=f3f4f6&color=475569"
+                                    alt="@user.HoTen" class="w-10 h-10 rounded-full border border-gray-200 @(isBlocked ? "opacity-50 grayscale" : "")" />
+                                    <div>
+                                        <p class="font-bold text-gray-800 @(isBlocked ? "text-gray-500" : "")">@user.HoTen</p>
+                                        <p class="text-xs text-gray-500 font-mono mt-0.5">@user.Email</p>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="p-4">
+                                @if (user.VaiTro == "ADMIN")
+                                {
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                                        <i class="ph ph-shield-star mr-1"></i> Admin
+                                    </span>
+                                }
+                                else if (user.VaiTro == "STAFF")
+                                {
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                                        <i class="ph ph-user-gear mr-1"></i> Nhân viên
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                                        <i class="ph ph-user mr-1"></i> Khách hàng
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="p-4">
+                                <div class="flex flex-col gap-1">
+                                    <span class="font-medium text-gray-800 flex items-center gap-1.5">
+                                        <i class="ph ph-phone text-gray-400"></i> @(string.IsNullOrEmpty(user.SoDienThoai) ? "---" : user.SoDienThoai)
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td class="p-4 text-center">
+                                @if (!isBlocked)
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5"></span>
+                                        Hoạt động
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span class="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
+                                        Bị khóa
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="p-4 pr-6 text-right space-x-1">
+                                <button class="p-1.5 text-blue-500 hover:bg-blue-100 rounded transition-colors" title="Sửa thông tin" @onclick="() => EditUser(user)">
+                                    <i class="ph ph-pencil-simple text-xl"></i>
+                                </button>
+                                @if (!isBlocked)
+                                {
+                                    <button class="p-1.5 text-yellow-500 hover:bg-yellow-100 rounded transition-colors" title="Khóa tài khoản" @onclick="() => LockUser(user.MaTK)">
+                                        <i class="ph ph-lock text-xl"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="p-1.5 text-green-500 hover:bg-green-100 rounded transition-colors" title="Mở khóa tài khoản" @onclick="() => UnlockUser(user.MaTK)">
+                                        <i class="ph ph-lock-key-open text-xl"></i>
+                                    </button>
+                                }
+                                <button class="p-1.5 text-red-500 hover:bg-red-100 rounded transition-colors" title="Xóa tài khoản" @onclick="() => DeleteUser(user.MaTK)">
+                                    <i class="ph ph-trash text-xl"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Phân trang -->
+    <div class="flex items-center justify-center mt-6 text-sm">
+        <div class="flex gap-1">
+            <button @onclick="() => GoToPage(CurrentPage - 1)" class="px-3 py-1 border rounded-md shadow-sm @(CurrentPage == 1 ? "border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed" : "border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors")" disabled="@(CurrentPage == 1)">Trước</button>
+            @if (TotalPages <= 5)
+            {
+                @for (int i = 1; i <= TotalPages; i++)
+                {
+                    var pageNum = i;
+                    <button @onclick="() => GoToPage(pageNum)" class="px-3 py-1 border rounded-md shadow-sm @(CurrentPage == pageNum ? "border-blue-500 text-white bg-blue-600 font-medium" : "border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors")">@pageNum</button>
+                }
+            }
+            <button @onclick="() => GoToPage(CurrentPage + 1)" class="px-3 py-1 border rounded-md shadow-sm @(CurrentPage == TotalPages || TotalPages == 0 ? "border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed" : "border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors")" disabled="@(CurrentPage == TotalPages || TotalPages == 0)">Sau</button>
+        </div>
+    </div>
+</div>
+
+@if (showEditor)
+{
+    <div class="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-50 transition-all">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-bold text-gray-800">
+                    @(editingId == Guid.Empty ? "Thêm tài khoản mới" : "Chỉnh sửa tài khoản")
+                </h3>
+                <button class="text-gray-400 hover:text-red-500 transition-colors rounded-lg p-1 hover:bg-red-50" @onclick="Cancel">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+            @if (editingId == Guid.Empty)
+            {
+                <EditForm Model="editorCreate" OnValidSubmit="SaveUser" class="flex flex-col">
+                    <DataAnnotationsValidator />
+                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="p-3 bg-red-50 text-red-600 rounded-lg border border-red-200 flex items-center text-sm shadow-sm">
+                                <i class="ph ph-warning-circle text-lg mr-2 font-bold"></i>
+                                @errorMessage
+                            </div>
+                        }
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email <span class="text-red-500">*</span></label>
+                                <InputText @bind-Value="editorCreate.Email" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                                <ValidationMessage For="@(() => editorCreate.Email)" class="text-red-500 text-xs mt-1" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Mật khẩu <span class="text-red-500">*</span></label>
+                                <InputText type="password" @bind-Value="editorCreate.Password" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                                <ValidationMessage For="@(() => editorCreate.Password)" class="text-red-500 text-xs mt-1" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Họ tên <span class="text-red-500">*</span></label>
+                            <InputText @bind-Value="editorCreate.HoTen" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                            <ValidationMessage For="@(() => editorCreate.HoTen)" class="text-red-500 text-xs mt-1" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Số điện thoại</label>
+                                <InputText @bind-Value="editorCreate.SoDienThoai" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                                <ValidationMessage For="@(() => editorCreate.SoDienThoai)" class="text-red-500 text-xs mt-1" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Vai trò</label>
+                                <InputSelect @bind-Value="editorCreate.VaiTro" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <option value="CUSTOMER">Khách hàng</option>
+                                    <option value="STAFF">Nhân viên</option>
+                                    <option value="ADMIN">Quản trị viên</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                        <button type="button" class="px-5 py-2.5 text-gray-600 hover:bg-gray-200 font-medium rounded-lg transition-colors" @onclick="Cancel">Hủy</button>
+                        <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center">
+                            <i class="ph ph-floppy-disk mr-2 text-lg"></i> Lưu lại
+                        </button>
+                    </div>
+                </EditForm>
+            }
+            else
+            {
+                <EditForm Model="editorUpdate" OnValidSubmit="SaveUser" class="flex flex-col">
+                    <DataAnnotationsValidator />
+                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="p-3 bg-red-50 text-red-600 rounded-lg border border-red-200 flex items-center text-sm shadow-sm">
+                                <i class="ph ph-warning-circle text-lg mr-2 font-bold"></i>
+                                @errorMessage
+                            </div>
+                        }
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Họ tên</label>
+                            <InputText @bind-Value="editorUpdate.HoTen" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                            <ValidationMessage For="@(() => editorUpdate.HoTen)" class="text-red-500 text-xs mt-1" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Số điện thoại</label>
+                                <InputText @bind-Value="editorUpdate.SoDienThoai" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                                <ValidationMessage For="@(() => editorUpdate.SoDienThoai)" class="text-red-500 text-xs mt-1" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Vai trò</label>
+                                <InputSelect @bind-Value="editorUpdate.VaiTro" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <option value="CUSTOMER">Khách hàng</option>
+                                    <option value="STAFF">Nhân viên</option>
+                                    <option value="ADMIN">Quản trị viên</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                        <button type="button" class="px-5 py-2.5 text-gray-600 hover:bg-gray-200 font-medium rounded-lg transition-colors" @onclick="Cancel">Hủy</button>
+                        <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center">
+                            <i class="ph ph-floppy-disk mr-2 text-lg"></i> Lưu lại
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private List<UserDto>? AllUsers;
+
+    private int CurrentPage = 1;
+    private int PageSize = 10;
+    private int TotalPages = 1;
+    
+    private string searchQuery = "";
+    private string filterRole = "";
+    private string filterStatus = "";
+
+    private bool showEditor = false;
+    private Guid editingId = Guid.Empty;
+    private string errorMessage = string.Empty;
+
+    private CreateUserRequest editorCreate = new() { VaiTro = "CUSTOMER" };
+    private UpdateUserByAdminRequest editorUpdate = new();
+
+    private IEnumerable<UserDto>? FilteredUsers
+    {
+        get
+        {
+            if (AllUsers == null) return null;
+            var query = AllUsers.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                query = query.Where(x => 
+                    x.HoTen.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) || 
+                    x.Email.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    x.SoDienThoai.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(filterRole))
+            {
+                query = query.Where(x => x.VaiTro == filterRole);
+            }
+            if (!string.IsNullOrWhiteSpace(filterStatus))
+            {
+                query = query.Where(x => x.TrangThai == filterStatus);
+            }
+            return query;
+        }
+    }
+
+    [Inject] private blazor_frontend.Services.IAuthService authService { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await authService.InitializeAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var result = await userService.GetAllUsersAsync(CurrentPage, PageSize);
+        if (result != null)
+        {
+            AllUsers = result.Data;
+            TotalPages = (int)Math.Ceiling(result.Total / (double)PageSize);
+        }
+        else
+        {
+            AllUsers = new List<UserDto>();
+            TotalPages = 1;
+        }
+    }
+
+    private async Task GoToPage(int page)
+    {
+        if (page >= 1 && page <= TotalPages)
+        {
+            CurrentPage = page;
+            await LoadData();
+        }
+    }
+
+    private void Cancel()
+    {
+        showEditor = false;
+        errorMessage = string.Empty;
+    }
+
+    private void NewUser()
+    {
+        editingId = Guid.Empty;
+        editorCreate = new CreateUserRequest { VaiTro = "CUSTOMER" };
+        errorMessage = string.Empty;
+        showEditor = true;
+    }
+
+    private void EditUser(UserDto user)
+    {
+        editingId = user.MaTK;
+        editorUpdate = new UpdateUserByAdminRequest
+        {
+            HoTen = user.HoTen,
+            SoDienThoai = user.SoDienThoai,
+            DiaChi = user.DiaChi,
+            VaiTro = user.VaiTro,
+            TrangThai = user.TrangThai
+        };
+        errorMessage = string.Empty;
+        showEditor = true;
+    }
+
+    private async Task SaveUser()
+    {
+        if (editingId == Guid.Empty)
+        {
+            if (string.IsNullOrWhiteSpace(editorCreate.Email) || string.IsNullOrWhiteSpace(editorCreate.Password) || string.IsNullOrWhiteSpace(editorCreate.HoTen))
+            {
+                await Swal.FireAsync("Cảnh báo", "Vui lòng nhập đầy đủ Email, Mật khẩu và Họ tên.", SweetAlertIcon.Warning);
+                return;
+            }
+            try 
+            {
+                var newId = await userService.CreateUserAsync(editorCreate);
+                if (newId != null)
+                {
+                    await Swal.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Thành công",
+                        Text = "Đã tạo tài khoản mới",
+                        Icon = SweetAlertIcon.Success,
+                        Timer = 2000,
+                        ShowConfirmButton = false
+                    });
+                }
+                else
+                {
+                    await Swal.FireAsync("Lỗi", "Thêm thất bại. Email có thể đã tồn tại.", SweetAlertIcon.Error);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                await Swal.FireAsync("Lỗi", ex.Message, SweetAlertIcon.Error);
+                return;
+            }
+        }
+        else
+        {
+            var success = await userService.UpdateUserAsync(editingId, editorUpdate);
+            if (success)
+            {
+                await Swal.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Thành công",
+                    Text = "Đã cập nhật thông tin người dùng",
+                    Icon = SweetAlertIcon.Success,
+                    Timer = 2000,
+                    ShowConfirmButton = false
+                });
+            }
+            else
+            {
+                await Swal.FireAsync("Lỗi", "Cập nhật thất bại.", SweetAlertIcon.Error);
+                return;
+            }
+        }
+        
+        showEditor = false;
+        await LoadData();
+    }
+
+    private async Task LockUser(Guid id)
+    {
+        var result = await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "Khóa tài khoản?",
+            Text = "Người dùng này sẽ không thể đăng nhập!",
+            Icon = SweetAlertIcon.Warning,
+            ShowCancelButton = true,
+            ConfirmButtonText = "Khóa",
+            CancelButtonText = "Hủy"
+        });
+
+        if (result.IsConfirmed)
+        {
+            if (await userService.LockUserAsync(id)) 
+            {
+                await Swal.FireAsync("Đã khóa", "Tài khoản đã bị tạm dừng hoạt động.", SweetAlertIcon.Success);
+                await LoadData();
+            }
+        }
+    }
+
+    private async Task UnlockUser(Guid id)
+    {
+        if (await userService.UnlockUserAsync(id)) 
+        {
+            await Swal.FireAsync("Thành công", "Tài khoản đã được mở khóa.", SweetAlertIcon.Success);
+            await LoadData();
+        }
+    }
+
+    private async Task DeleteUser(Guid id)
+    {
+        var result = await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "Xác nhận xóa?",
+            Text = "Dữ liệu người dùng sẽ bị xóa vĩnh viễn!",
+            Icon = SweetAlertIcon.Warning,
+            ShowCancelButton = true,
+            ConfirmButtonText = "Xóa ngay",
+            CancelButtonText = "Hủy",
+            ConfirmButtonColor = "#ef4444"
+        });
+
+        if (result.IsConfirmed)
+        {
+            if (await userService.DeleteUserAsync(id)) 
+            {
+                await Swal.FireAsync("Đã xóa", "Tài khoản đã được loại bỏ.", SweetAlertIcon.Success);
+                await LoadData();
+            }
+        }
+    }
+}

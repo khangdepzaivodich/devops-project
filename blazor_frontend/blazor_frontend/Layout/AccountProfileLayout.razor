@@ -1,0 +1,17 @@
+@inherits LayoutComponentBase
+@using blazor_frontend.Shared
+
+<div class="min-h-screen bg-gray-50">
+    <LandingHeader CartCount="0" />
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+            @Body
+        </div>
+
+        <div class="text-center text-xs text-gray-400 mt-6">
+            © @DateTime.Now.Year Serious —
+            <a href="/terms" class="underline hover:text-gray-600">Terms</a>
+        </div>
+    </div>
+</div>

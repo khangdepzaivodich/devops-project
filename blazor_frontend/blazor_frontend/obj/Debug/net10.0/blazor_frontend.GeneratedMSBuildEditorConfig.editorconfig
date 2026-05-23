@@ -1,0 +1,221 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.VerifyReferenceTrimCompatibility = 
+build_property.VerifyReferenceAotCompatibility = 
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = blazor_frontend
+build_property.RootNamespace = blazor_frontend
+build_property.ProjectDir = C:\Users\khang\OneDrive\Desktop\dotnet_project\blazor_frontend\blazor_frontend\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\khang\OneDrive\Desktop\dotnet_project\blazor_frontend\blazor_frontend
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/AccountLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEFjY291bnRMYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/AccountProfileLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEFjY291bnRQcm9maWxlTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/AdminLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEFkbWluTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/EmptyLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEVtcHR5TGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/StaffLayout/StaffHeader.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XFN0YWZmTGF5b3V0XFN0YWZmSGVhZGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/StaffLayout/StaffSidebar.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XFN0YWZmTGF5b3V0XFN0YWZmU2lkZWJhci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/StaffPage.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XFN0YWZmUGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/Component.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxDb21wb25lbnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/ForgotPassword.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxGb3Jnb3RQYXNzd29yZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/Messages.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxNZXNzYWdlcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/Orders.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxPcmRlcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/Profile.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxQcm9maWxlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/ResetPassword.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxSZXNldFBhc3N3b3JkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/SignIn.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxTaWduSW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/SignUp.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxTaWduVXAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Account/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFxfSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/AdminRedirect.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQWRtaW5SZWRpcmVjdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/Categories.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cQ2F0ZWdvcmllcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/Discounts.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cRGlzY291bnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/Orders.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cT3JkZXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/Products.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cUHJvZHVjdHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/Statistics.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cU3RhdGlzdGljcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/Users.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cVXNlcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Admin/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cX0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/CategoryPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2F0ZWdvcnlQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Products/Detail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZHVjdHNcRGV0YWlsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Staff/Messages.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RhZmZcTWVzc2FnZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Staff/OrderDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RhZmZcT3JkZXJEZXRhaWxzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Staff/Orders.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RhZmZcT3JkZXJzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Staff/StaffRedirect.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RhZmZcU3RhZmZSZWRpcmVjdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Staff/Test.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RhZmZcVGVzdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Staff/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3RhZmZcX0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Pages/Unauthorized.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVW5hdXRob3JpemVkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/Cart.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENhcnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/CartDrawer.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENhcnREcmF3ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/ChatWidget.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENoYXRXaWRnZXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/Hero.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXEhlcm8ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/LandingFooter.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXExhbmRpbmdGb290ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/LandingHeader.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXExhbmRpbmdIZWFkZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/ProductCard.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFByb2R1Y3RDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/ProductList.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFByb2R1Y3RMaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/PromoBanner.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFByb21vQmFubmVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Shared/SectionGroup.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFNlY3Rpb25Hcm91cC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-6rql1svms9
+
+[C:/Users/khang/OneDrive/Desktop/dotnet_project/blazor_frontend/blazor_frontend/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-4d14679hn0

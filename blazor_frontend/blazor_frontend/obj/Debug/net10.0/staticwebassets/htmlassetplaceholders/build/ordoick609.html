@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FashionStore</title>
+    <base href="/" />
+    <link href="_framework/dotnet.zcy240cx4o.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-c563BXTT2TYjj9Boi+Eb3iozHGwTR0FAN8brMWKNNr4=" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="blazor_frontend.styles.css" rel="stylesheet" />
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script type="importmap">{
+  "imports": {
+    "./_content/Blazor-ApexCharts/js/apexcharts.esm.js": "./_content/Blazor-ApexCharts/js/apexcharts.esm.h882x6wr7v.js",
+    "./_content/Blazor-ApexCharts/js/blazor-apexcharts.js": "./_content/Blazor-ApexCharts/js/blazor-apexcharts.zql1jd3hot.js",
+    "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js": "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.99zm1jdh75.lib.module.js",
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.66stpp682q.js",
+    "./_framework/dotnet.native.js": "./_framework/dotnet.native.mx9wzm9o5h.js",
+    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.2zl32tp6ah.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.zcy240cx4o.js",
+    "./js/vietnam-provinces.umd.js": "./js/vietnam-provinces.umd.cnukxv9z9e.js",
+    "./lib/bootstrap/dist/js/bootstrap.js": "./lib/bootstrap/dist/js/bootstrap.4ag0r1gdej.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "./lib/bootstrap/dist/js/bootstrap.bundle.1a3aincpel.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "./lib/bootstrap/dist/js/bootstrap.bundle.min.hd3gran6i8.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "./lib/bootstrap/dist/js/bootstrap.esm.d7q738y3vm.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "./lib/bootstrap/dist/js/bootstrap.esm.min.8vyfqsqgz1.js",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "./lib/bootstrap/dist/js/bootstrap.min.4d85u1mtcx.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_content/Blazor-ApexCharts/js/apexcharts.esm.h882x6wr7v.js": "sha256-Me/0pVM/DeNNyCbOqiYTyK/B2Xdev4YSA0cw3FI0I0g=",
+    "./_content/Blazor-ApexCharts/js/apexcharts.esm.js": "sha256-Me/0pVM/DeNNyCbOqiYTyK/B2Xdev4YSA0cw3FI0I0g=",
+    "./_content/Blazor-ApexCharts/js/blazor-apexcharts.js": "sha256-pSTiNp0EHiK1R8oo+Fxk/lg9ZZRfmqmR/z89YjJ2SXU=",
+    "./_content/Blazor-ApexCharts/js/blazor-apexcharts.zql1jd3hot.js": "sha256-pSTiNp0EHiK1R8oo+Fxk/lg9ZZRfmqmR/z89YjJ2SXU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/bootstrap4Theme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/bootstrap4Theme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/borderlessTheme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/borderlessTheme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/bulmaTheme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/bulmaTheme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/darkTheme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/darkTheme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/defaultTheme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/defaultTheme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/materialUITheme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/materialUITheme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/minimalTheme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/minimalTheme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/sweetAlert2.js": "sha256-+a7vftmW76aT+wsvZETEJj4/nBzL00leH6+qOTXO8bI=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/sweetAlert2.min.js": "sha256-CWwYCgx/FWaY9IECFUmrxwrV296sDeAAtqK6ILW9dx4=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/wordpressAdminTheme.js": "sha256-UQwyDCflOyAlFdhJU8wBqtKVZe5AmqqNbtQDBlAAlgM=",
+    "./_content/CurrieTechnologies.Razor.SweetAlert2/wordpressAdminTheme.min.js": "sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+    "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.99zm1jdh75.lib.module.js": "sha256-A8e6zZwhOqf7lDQqbbCYcAUv4wGE9aQxOo4WyYxR//0=",
+    "./_content/Microsoft.DotNet.HotReload.WebAssembly.Browser/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js": "sha256-A8e6zZwhOqf7lDQqbbCYcAUv4wGE9aQxOo4WyYxR//0=",
+    "./_framework/blazor.webassembly.66stpp682q.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
+    "./_framework/blazor.webassembly.js": "sha256-3lCWrko3zwspV40aQhs2S/IMkRSarnHRKIdkHhuXIBA=",
+    "./_framework/dotnet.js": "sha256-c563BXTT2TYjj9Boi+Eb3iozHGwTR0FAN8brMWKNNr4=",
+    "./_framework/dotnet.native.js": "sha256-tlrn00yvndmJzhFdKpELUlytdgWFyGFdTWjI10bgILU=",
+    "./_framework/dotnet.native.mx9wzm9o5h.js": "sha256-tlrn00yvndmJzhFdKpELUlytdgWFyGFdTWjI10bgILU=",
+    "./_framework/dotnet.runtime.2zl32tp6ah.js": "sha256-/ndm/PF1BeBT5mXzYAES79wNK5sIZIQKAGcUqPL9ZP8=",
+    "./_framework/dotnet.runtime.js": "sha256-/ndm/PF1BeBT5mXzYAES79wNK5sIZIQKAGcUqPL9ZP8=",
+    "./_framework/dotnet.zcy240cx4o.js": "sha256-c563BXTT2TYjj9Boi+Eb3iozHGwTR0FAN8brMWKNNr4=",
+    "./js/vietnam-provinces.umd.cnukxv9z9e.js": "sha256-KMVRIx6sixtWJYSWxoRfv1ArkvnAyasadab5U4/rPDc=",
+    "./js/vietnam-provinces.umd.js": "sha256-KMVRIx6sixtWJYSWxoRfv1ArkvnAyasadab5U4/rPDc=",
+    "./lib/bootstrap/dist/js/bootstrap.4ag0r1gdej.js": "sha256-bDFDrpctLEowqHgkXvc3FwwSG5tf7lysJuNLOoSCVyo=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.1a3aincpel.js": "sha256-58L7mwJT6E6adokKdPxi7qBdS69Ra1MkmQaGuyJ9psk=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "sha256-58L7mwJT6E6adokKdPxi7qBdS69Ra1MkmQaGuyJ9psk=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.hd3gran6i8.js": "sha256-6zfk2L8R3wCgRbZzpkEi7UYC2bc6fYGIgFfNeqyOWnQ=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "sha256-6zfk2L8R3wCgRbZzpkEi7UYC2bc6fYGIgFfNeqyOWnQ=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.d7q738y3vm.js": "sha256-aWMZ5d7TrFgp3SZgjysFOecV69yxpfgbNG3aw1igooY=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "sha256-aWMZ5d7TrFgp3SZgjysFOecV69yxpfgbNG3aw1igooY=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.8vyfqsqgz1.js": "sha256-REjSeieVKd00nAKwd6dv7MMhuVKvKctPmLI4iDRs/cc=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "sha256-REjSeieVKd00nAKwd6dv7MMhuVKvKctPmLI4iDRs/cc=",
+    "./lib/bootstrap/dist/js/bootstrap.js": "sha256-bDFDrpctLEowqHgkXvc3FwwSG5tf7lysJuNLOoSCVyo=",
+    "./lib/bootstrap/dist/js/bootstrap.min.4d85u1mtcx.js": "sha256-aCTIqw9op0XQGYnNe1649V7fnihACD48OP3M8BP2xVM=",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "sha256-aCTIqw9op0XQGYnNe1649V7fnihACD48OP3M8BP2xVM="
+  }
+}</script>
+</head>
+
+<body>
+    <div id="app">
+        <div class="flex items-center justify-center h-screen bg-gray-50">
+            <div class="flex flex-col items-center gap-4">
+                <!-- Tailwind Spinner -->
+                <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <div class="text-lg font-medium text-gray-600">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui"
+        class="fixed bottom-0 left-0 w-full p-4 bg-yellow-100 text-yellow-900 z-50 shadow-lg justify-between items-center"
+        style="display: none;">
+        <span>An unhandled error has occurred.</span>
+        <div>
+            <a href="." class="font-bold underline text-blue-600 hover:text-blue-800 mr-4">Reload</a>
+            <span class="dismiss cursor-pointer font-bold text-red-600">🗙</span>
+        </div>
+    </div>
+    <script src="_content/CurrieTechnologies.Razor.SweetAlert2/sweetAlert2.min.js"></script>
+    <script src="_framework/blazor.webassembly.66stpp682q.js"></script>
+    <script src="js/vietnam-provinces.umd.js"></script>
+    <script>
+        window.vietnamProvincesData = {
+            getProvinces: () => (window.vietnamProvinces?.getProvinces?.() ?? []),
+            getDistricts: (provinceCode) => (window.vietnamProvinces?.getDistricts?.(provinceCode) ?? []),
+            getWards: (districtCode) => (window.vietnamProvinces?.getWards?.(districtCode) ?? [])
+        };
+
+        window.scrollToBottomById = (elementId) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollTop = element.scrollHeight;
+                setTimeout(() => { element.scrollTop = element.scrollHeight; }, 50);
+                setTimeout(() => { element.scrollTop = element.scrollHeight; }, 150);
+            }
+        };
+
+        // Fix cho việc nhấn Back không bị nhảy lên đầu trang
+        window.addEventListener('popstate', function() {
+            if (window.location.pathname.includes('/category') || 
+                window.location.pathname.includes('/subcategory') || 
+                window.location.pathname.includes('/products')) {
+                history.scrollRestoration = 'manual';
+            } else {
+                history.scrollRestoration = 'auto';
+            }
+        });
+    </script>
+</body>
+
+</html>

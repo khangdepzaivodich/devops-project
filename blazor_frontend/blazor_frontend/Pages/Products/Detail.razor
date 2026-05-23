@@ -1,0 +1,656 @@
+@page "/product/{Slug}"
+@using blazor_frontend.Shared
+@using blazor_frontend.Models.BackendDTOs
+@inject IJSRuntime JSRuntime
+@inject IBasketService BasketService
+@inject blazor_frontend.Services.IDiscountService DiscountService
+@inject NavigationManager Navigation
+@inject blazor_frontend.Services.IProductService productService
+@inject blazor_frontend.Services.ICategoryService categoryService
+@inject blazor_frontend.Services.AuthState AuthState
+@inject CurrieTechnologies.Razor.SweetAlert2.SweetAlertService Swal
+
+<div class="bg-white pb-16 min-h-screen">
+    <!-- Breadcrumb -->
+    <div class="border-b border-gray-50 mb-12">
+        <div class="max-w-[1200px] mx-auto px-4 md:px-6 py-6">
+            <nav class="flex items-center text-[11px] font-black tracking-[0.3em]" style="gap: 30px;">
+                <button @onclick='() => NavigateWithHistory("/")' class="breadcrumb-link">Trang chủ</button>
+                <svg class="w-4 h-4" style="color: #E2E8F0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <button @onclick='() => NavigateWithHistory("/products")' class="breadcrumb-link uppercase">TẤT CẢ SẢN PHẨM</button>
+                
+                @if (currentDanhMuc != null)
+                {
+                    @if (!string.IsNullOrEmpty(currentDanhMuc.TenLDM))
+                    {
+                        <svg class="w-4 h-4" style="color: #E2E8F0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <button @onclick="NavigateToParentCategory" class="breadcrumb-link uppercase">@currentDanhMuc.TenLDM</button>
+                    }
+                    
+                    <svg class="w-4 h-4" style="color: #E2E8F0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <button @onclick="NavigateToCategory" class="breadcrumb-link uppercase">@currentDanhMuc.TenDM</button>
+                }
+
+                @if (currentProduct != null)
+                {
+                    <svg class="w-4 h-4" style="color: #E2E8F0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="font-black uppercase truncate max-w-[300px]" style="color: #0F172A;">@currentProduct.TenSP</span>
+                }
+            </nav>
+        </div>
+    </div>
+
+    <!-- Product Top Section -->
+    <div class="max-w-[1200px] mx-auto px-4 md:px-6 flex flex-col lg:flex-row gap-8 mb-12">
+        
+        <!-- LEFT: Gallery (Thumbnails + Main Media) -->
+        <div class="w-full lg:w-[45%] flex gap-4" style="height: 600px;">
+            <!-- Vertical Thumbnails Scrollable -->
+            <div class="w-20 hidden md:flex flex-col relative">
+                <!-- Nút ấn Lên -->
+                <button aria-label="Up" @onclick="PrevMedia" class="w-full h-6 mb-2 bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm rounded border border-gray-200 z-10 text-gray-500 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                </button>
+
+                <div id="thumb-scroll" class="flex-1 flex flex-col gap-3 overflow-y-auto snap-y scroll-smooth" style="max-height: 420px; scrollbar-width: none; -ms-overflow-style: none;">
+                    <style>#thumb-scroll::-webkit-scrollbar { display: none; }</style>
+                    @for (var i = 0; i < thumbnails.Length; i++)
+                    {
+                        var index = i;
+                        var thumbnail = thumbnails[index];
+                        <button id="thumb-@index" @onclick="() => SelectMedia(index)" class="snap-start shrink-0 h-24 relative border-2 transition-all overflow-hidden @(selectedMediaIndex == index ? "border-black shadow-md" : "border-transparent opacity-70 hover:opacity-100")">
+                            <img src="@thumbnail" class="w-full h-full object-cover object-top" onerror="this.src='/product1.jpg';" />
+                        </button>
+                    }
+                </div>
+
+                <!-- Nút ấn Xuống -->
+                <button aria-label="Down" @onclick="NextMedia" class="w-full h-6 mt-2 bg-white hover:bg-gray-100 flex items-center justify-center shadow-sm rounded border border-gray-200 z-10 text-gray-500 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+            </div>
+
+            <!-- Main Large Image/Video -->
+            <div class="flex-1 bg-gray-100 relative rounded-md overflow-hidden shadow-sm flex items-center justify-center group">
+                <button @onclick="PrevMedia" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow z-10 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100">
+                    <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+
+                <img src="@CurrentImage" class="w-full h-full object-cover object-top" onerror="this.src='product1.jpg';" />
+
+                <button @onclick="NextMedia" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow z-10 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100">
+                    <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: Product Info -->
+        <div class="w-full lg:w-[55%] flex flex-col">
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">@(currentProduct?.TenSP ?? "Sản phẩm")</h1>
+            <div class="mb-4 flex items-center gap-3">
+                <span class="inline-block text-white text-xs font-bold px-2 py-0.5 rounded @(IsInStock ? "bg-green-500" : "bg-gray-500")">@(IsInStock ? "Còn hàng" : "Hết hàng")</span>
+                @if (currentProduct != null)
+                {
+                    <span class="inline-flex items-center gap-1 text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        Đã bán @FormatLuotBan(currentProduct.LuotBan)
+                    </span>
+                }
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-2">Mã sản phẩm: <span class="font-semibold text-gray-800">@(currentProduct?.MaSP.ToString()[..8].ToUpper() ?? "N/A")</span></p>
+            
+            <div class="flex flex-col mb-6">
+                <div class="flex items-end gap-3">
+                    @if (BestDiscount != null)
+                    {
+                        <span class="text-3xl font-extrabold text-red-600">@BestDiscountedPrice.ToString("N0")₫</span>
+                        <span class="text-lg text-gray-400 line-through mb-1">@CurrentPrice.ToString("N0")₫</span>
+                    }
+                    else
+                    {
+                        <span class="text-3xl font-extrabold text-[#002f6c]">@CurrentPrice.ToString("N0")₫</span>
+                    }
+                </div>
+                @if (BestDiscount != null)
+                {
+                    <div class="mt-2 inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md bg-red-50 text-red-700 text-xs font-bold border border-red-100 w-fit">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.266 0 .52.105.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path></svg>
+                        GIÁ ƯU ĐÃI TỐT NHẤT
+                    </div>
+                }
+            </div>
+
+
+
+            <!-- Color Options -->
+            <div class="mb-6">
+                <p class="text-sm font-semibold text-gray-800 mb-2">Màu sắc: <span class="font-bold">@(selectedColor ?? "")</span></p>
+                <div class="flex gap-3">
+                    @foreach (var color in AvailableColors)
+                    {
+                        <button class="px-3 h-8 rounded border text-xs font-medium @(string.Equals(selectedColor, color, StringComparison.OrdinalIgnoreCase) ? "border-gray-900 bg-gray-900 text-white" : "border-gray-300 bg-white text-gray-700")"
+                                @onclick="() => SelectColor(color)">
+                            @color
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Size Options -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-sm font-semibold text-gray-800">Kích thước: <span class="font-bold">@(selectedSize ?? "")</span></p>
+                    <a href="#" class="text-xs text-gray-600 underline flex items-center gap-1 hover:text-black">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        Hướng dẫn chọn size
+                    </a>
+                </div>
+                <div class="flex gap-2 mb-3">
+                    @foreach (var size in AvailableSizes)
+                    {
+                        var hasStock = HasStockForSize(size);
+                        <button class="w-10 h-10 border rounded font-medium @(string.Equals(selectedSize, size, StringComparison.OrdinalIgnoreCase) ? "border-2 border-gray-900 text-gray-900" : "border-gray-300 text-gray-600 hover:border-gray-900") @(!hasStock ? "line-through opacity-50" : "")"
+                                @onclick="() => SelectSize(size)"
+                                disabled="@(!hasStock)">
+                            @size
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Actions (Add to Cart / Buy Now) -->
+            <div class="mb-4">
+                <div class="flex gap-4 mb-2">
+                    <div class="flex items-center justify-between w-32 border border-gray-300 rounded-md bg-white">
+                        <button class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 text-gray-600 font-bold transition-colors select-none" @onclick="DecreaseQuantity">-</button>
+                        <div class="flex-1 text-center font-semibold text-gray-800">@Quantity</div>
+                        <button class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 text-gray-600 font-bold transition-colors select-none @(SelectedVariant != null && Quantity >= SelectedVariant.SoLuong ? "opacity-30 cursor-not-allowed" : "")" 
+                                @onclick="IncreaseQuantity" 
+                                disabled="@(SelectedVariant != null && Quantity >= SelectedVariant.SoLuong)">+</button>
+                    </div>
+                    <button class="flex-1 text-[#0b3b72] border-2 border-[#0b3b72] font-bold rounded-md uppercase tracking-wide hover:bg-blue-50 transition-colors @(AuthState.Role == "ADMIN" ? "opacity-50 cursor-not-allowed" : "")" 
+                            @onclick="AddToCartAsync"
+                            disabled="@(AuthState.Role == "ADMIN")"
+                            title="@(AuthState.Role == "ADMIN" ? "Tài khoản quản trị viên không được mua hàng" : "")">
+                        THÊM VÀO GIỎ
+                    </button>
+                </div>
+                @if (SelectedVariant != null)
+                {
+                    <p class="text-[11px] font-bold @(SelectedVariant.SoLuong > 0 ? "text-green-600" : "text-red-600") uppercase tracking-wider">
+                        @if (SelectedVariant.SoLuong > 0)
+                        {
+                            <span><i class="ph ph-check-circle"></i> Còn @SelectedVariant.SoLuong sản phẩm trong kho</span>
+                        }
+                        else
+                        {
+                            <span><i class="ph ph-x-circle"></i> Hết hàng</span>
+                        }
+                    </p>
+                }
+            </div>
+            <button class="w-full bg-[#0b3b72] text-white py-4 rounded-md font-bold text-lg uppercase tracking-wide hover:bg-[#082950] transition-colors shadow-md mb-6 @(AuthState.Role == "ADMIN" ? "opacity-50 cursor-not-allowed" : "")" 
+                    @onclick="BuyNowAsync"
+                    disabled="@(AuthState.Role == "ADMIN")"
+                    title="@(AuthState.Role == "ADMIN" ? "Tài khoản quản trị viên không được mua hàng" : "")">
+                MUA NGAY
+            </button>
+
+            <!-- Store Policies / Features Icons -->
+            <div class="grid grid-cols-4 gap-2 border-t border-gray-200 pt-6">
+                <div class="flex flex-col items-center justify-center text-center gap-1">
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                    <span class="text-xs text-gray-600">Freeship đơn<br/>từ 399K</span>
+                </div>
+                <div class="flex flex-col items-center justify-center text-center gap-1">
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
+                    <span class="text-xs text-gray-600">Cộng dồn<br/>Membership</span>
+                </div>
+                <div class="flex flex-col items-center justify-center text-center gap-1">
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    <span class="text-xs text-gray-600">Thanh toán<br/>COD</span>
+                </div>
+                <div class="flex flex-col items-center justify-center text-center gap-1">
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    <span class="text-xs text-gray-600">Đổi hàng<br/>trong 15 ngày</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MIDDLE: Tabs Section -->
+    <div class="max-w-[1200px] mx-auto px-4 md:px-6 mb-16">
+        <div class="border-b border-gray-200">
+            <nav class="flex gap-8">
+                <button @onclick="() => activeTab = 1" class="py-4 font-bold text-sm tracking-wide transition-colors border-b-2 @(activeTab == 1 ? "border-[#002f6c] text-[#002f6c]" : "border-transparent text-gray-500 hover:text-black")">
+                    MÔ TẢ
+                </button>
+                <button @onclick="() => activeTab = 2" class="py-4 font-bold text-sm tracking-wide transition-colors border-b-2 @(activeTab == 2 ? "border-[#002f6c] text-[#002f6c]" : "border-transparent text-gray-500 hover:text-black")">
+                    CHÍNH SÁCH GIAO HÀNG
+                </button>
+                <button @onclick="() => activeTab = 3" class="py-4 font-bold text-sm tracking-wide transition-colors border-b-2 @(activeTab == 3 ? "border-[#002f6c] text-[#002f6c]" : "border-transparent text-gray-500 hover:text-black")">
+                    CHÍNH SÁCH ĐỔI HÀNG
+                </button>
+            </nav>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="py-8 text-gray-700 leading-relaxed text-sm">
+            @if (activeTab == 1)
+            {
+                <h3 class="font-bold text-lg mb-2">ICONDENIM &reg; [TechUrban] | ProCOOL COLLECTION</h3>
+                <h4 class="font-bold mb-4">Áo Polo Nam Trơn ProCOOL Seam Sealing Form Slim</h4>
+                <p class="mb-4 text-justify">
+                    *Những sản phẩm thuộc <strong class="italic">ProCOOL COLLECTION</strong> được nghiên cứu và phát triển bởi đội ngũ <strong>ICONDENIM&reg;</strong>. Áo Polo Nam Trơn Ép Diềm ProCOOL Seam Sealing [TechUrban] có độ mát ấn tượng ngay từ lần chạm tay đầu tiên.
+                </p>
+                <ul class="list-disc pl-5 mb-6 space-y-2 font-medium">
+                    <li><span class="text-gray-900 font-bold">Chất liệu:</span> 83% Polyamide & 17% Spandex</li>
+                    <li><span class="text-gray-900 font-bold">Form:</span> Slim Fit</li>
+                </ul>
+            }
+            else if (activeTab == 2)
+            {
+                <h3 class="font-bold text-lg mb-4 text-[#002f6c]">Chính sách giao hàng</h3>
+                <ul class="list-disc pl-5 space-y-3">
+                    <li>Giao hàng nhanh trong 2-3 ngày làm việc đối với các khu vực trung tâm.</li>
+                    <li>Miễn phí vận chuyển cho những hóa đơn có tổng giá trị trên 399.000 VNĐ.</li>
+                    <li>Có hỗ trợ đồng kiểm trước khi nhận và thanh toán trực tiếp (COD).</li>
+                </ul>
+            }
+            else if (activeTab == 3)
+            {
+                <h3 class="font-bold text-lg mb-4 text-[#002f6c]">Chính sách đổi trả</h3>
+                <ul class="list-disc pl-5 space-y-3">
+                    <li>Khách hàng được hỗ trợ đổi size, đổi mẫu trong vòng 15 ngày kể từ khi nhận hàng.</li>
+                    <li>Sản phẩm đổi trả phải còn nguyên tem mác, chưa qua sử dụng hay giặt ủi.</li>
+                    <li>Với các sản phẩm lỗi do nhà sản xuất, ICONDENIM sẽ chịu 100% phí chuyển hoàn 2 chiều.</li>
+                </ul>
+            }
+        </div>
+    </div>
+
+    <!-- BOTTOM: Similar Products (Sản phẩm cùng loại) -->
+    <div class="max-w-[1200px] mx-auto px-4 md:px-6 mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 font-sans">Sản phẩm cùng loại</h2>
+        <!-- 5 Columns Product List -->
+        <ProductList Items="similarProducts" GridClass="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5" ShowActions="true" />
+    </div>
+
+</div>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private int selectedMediaIndex = 0;
+    private int activeTab = 1;
+    private int Quantity { get; set; } = 1;
+    private SanPhamDto? currentProduct;
+    private DanhMucDto? currentDanhMuc;
+    private List<ProductList.ProductDto> similarProducts = new();
+    private string? selectedColor;
+    private string? selectedSize;
+    private List<MaGiamGiaDto> allDiscounts = new();
+    private List<DanhMucDto> allCategories = new();
+    private List<LoaiDanhMucDto> allCategoryGroups = new();
+
+    private MaGiamGiaDto? BestDiscount => DiscountPricingHelper.GetBestApplicableDiscount(
+        currentProduct, 
+        CurrentPrice, 
+        allCategoryGroups, 
+        allCategories, 
+        allDiscounts);
+
+    private decimal BestDiscountedPrice => DiscountPricingHelper.GetFinalPrice(BestDiscount, CurrentPrice);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrEmpty(Slug))
+        {
+            return;
+        }
+
+        currentProduct = await productService.GetBySlugAsync(Slug);
+
+        if (currentProduct == null)
+        {
+            return;
+        }
+
+        var products = (await productService.GetAllAsync()).ToList();
+        selectedColor = AvailableColors.FirstOrDefault();
+        selectedSize = AvailableSizes.FirstOrDefault();
+
+        allDiscounts = (await DiscountService.GetDiscountsAsync()).ToList();
+        allCategories = (await categoryService.GetAllAsync()).ToList();
+        allCategoryGroups = (await categoryService.GetCategoryTypesAsync()).ToList();
+
+        currentDanhMuc = allCategories.FirstOrDefault(x => x.MaDM == currentProduct.MaDM);
+        
+        if (currentDanhMuc != null && string.IsNullOrEmpty(currentDanhMuc.TenLDM))
+        {
+            var parentType = allCategoryGroups.FirstOrDefault(x => x.MaLDM == currentDanhMuc.MaLDM);
+            if (parentType != null)
+            {
+                currentDanhMuc.TenLDM = parentType.TenLDM;
+            }
+        }
+
+        var currentTenDM = currentDanhMuc?.TenDM ?? string.Empty;
+        var danhMucIdsCungTenDm = allCategories
+            .Where(x => string.Equals(x.TenDM, currentTenDM, StringComparison.OrdinalIgnoreCase))
+            .Select(x => x.MaDM)
+            .ToHashSet();
+
+        similarProducts = products
+            .Where(x => danhMucIdsCungTenDm.Contains(x.MaDM) && x.MaSP != currentProduct.MaSP)
+            .Take(5)
+            .Select(MapToCard)
+            .ToList();
+    }
+
+    private async Task NavigateWithHistory(string url)
+    {
+        if (url == "/")
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+        await JSRuntime.InvokeVoidAsync("history.pushState", null, "", url);
+        Navigation.NavigateTo(url);
+    }
+
+    private async Task NavigateToCategory()
+    {
+        if (currentDanhMuc != null)
+        {
+            var url = $"/subcategory/{currentDanhMuc.MaDM}/{Uri.EscapeDataString(currentDanhMuc.TenDM)}";
+            await NavigateWithHistory(url);
+        }
+    }
+
+    private async Task NavigateToParentCategory()
+    {
+        if (currentDanhMuc != null)
+        {
+            var url = $"/category/{currentDanhMuc.MaLDM}/{Uri.EscapeDataString(currentDanhMuc.TenLDM)}";
+            await NavigateWithHistory(url);
+        }
+    }
+
+    private string[] thumbnails => (currentProduct?.ChiTietSanPhams ?? new List<ChiTietSanPhamDto>())
+        .Select(x => x.Anh!)
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray() switch
+        {
+            { Length: > 0 } imgs => imgs!,
+            _ => ["product1.jpg"]
+        };
+
+    private string CurrentImage => thumbnails[Math.Clamp(selectedMediaIndex, 0, thumbnails.Length - 1)];
+
+    private IEnumerable<ChiTietSanPhamDto> Variants => currentProduct?.ChiTietSanPhams ?? new List<ChiTietSanPhamDto>();
+    private IEnumerable<string> AvailableColors => Variants.Select(x => x.Mau).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase);
+    private IEnumerable<string> AvailableSizes => Variants
+        .Where(x => string.IsNullOrWhiteSpace(selectedColor) || string.Equals(x.Mau, selectedColor, StringComparison.OrdinalIgnoreCase))
+        .Select(x => x.KichCo)
+        .Where(x => !string.IsNullOrWhiteSpace(x))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
+
+    private ChiTietSanPhamDto? SelectedVariant => Variants.FirstOrDefault(x =>
+        (string.IsNullOrWhiteSpace(selectedColor) || string.Equals(x.Mau, selectedColor, StringComparison.OrdinalIgnoreCase))
+        && (string.IsNullOrWhiteSpace(selectedSize) || string.Equals(x.KichCo, selectedSize, StringComparison.OrdinalIgnoreCase)));
+
+    private bool IsInStock => Variants.Any(x => x.SoLuong > 0);
+
+    private decimal CurrentPrice => SelectedVariant?.Gia ?? currentProduct?.ChiTietSanPhams?.FirstOrDefault()?.Gia ?? 0m;
+
+
+    private async Task SelectMedia(int index, bool skipColorSync = false)
+    {
+        if (thumbnails.Length == 0)
+        {
+            selectedMediaIndex = 0;
+            return;
+        }
+
+        selectedMediaIndex = Math.Clamp(index, 0, thumbnails.Length - 1);
+        
+        // Nếu click vào ảnh, tự động chọn màu tương ứng (nếu chưa chọn hoặc skipColorSync = false)
+        if (!skipColorSync)
+        {
+            var clickedImg = thumbnails[selectedMediaIndex];
+            var variantWithThisImg = Variants.FirstOrDefault(v => string.Equals(v.Anh, clickedImg, StringComparison.OrdinalIgnoreCase));
+            if (variantWithThisImg != null && !string.IsNullOrEmpty(variantWithThisImg.Mau))
+            {
+                if (!string.Equals(selectedColor, variantWithThisImg.Mau, StringComparison.OrdinalIgnoreCase))
+                {
+                    selectedColor = variantWithThisImg.Mau;
+                    if (!AvailableSizes.Contains(selectedSize ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    {
+                        selectedSize = AvailableSizes.FirstOrDefault();
+                    }
+                    ValidateQuantity();
+                }
+            }
+        }
+
+        StateHasChanged();
+        // Cuộn hộp thumbnail đủ để ảnh đang chọn xuất hiện trong khung nhìn (không ép lên đầu nếu không cần thiết)
+        await JSRuntime.InvokeVoidAsync("eval", $"var el = document.getElementById('thumb-{index}'); if(el) el.scrollIntoView({{behavior: 'smooth', block: 'nearest'}});");
+    }
+
+    private async Task PrevMedia()
+    {
+        if (thumbnails.Length == 0) return;
+        int newIndex = selectedMediaIndex > 0 ? selectedMediaIndex - 1 : thumbnails.Length - 1;
+        await SelectMedia(newIndex);
+    }
+
+    private async Task NextMedia()
+    {
+        if (thumbnails.Length == 0) return;
+        int newIndex = selectedMediaIndex < thumbnails.Length - 1 ? selectedMediaIndex + 1 : 0;
+        await SelectMedia(newIndex);
+    }
+
+    private async Task SelectColor(string color)
+    {
+        selectedColor = color;
+        
+        // Cập nhật ảnh tương ứng với màu
+        var firstImageForColor = Variants
+            .FirstOrDefault(v => string.Equals(v.Mau, color, StringComparison.OrdinalIgnoreCase))?.Anh;
+
+        if (!string.IsNullOrEmpty(firstImageForColor))
+        {
+            var imgIndex = Array.FindIndex(thumbnails, t => string.Equals(t, firstImageForColor, StringComparison.OrdinalIgnoreCase));
+            if (imgIndex >= 0)
+            {
+                await SelectMedia(imgIndex, skipColorSync: true);
+            }
+        }
+
+        if (!AvailableSizes.Contains(selectedSize ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+        {
+            selectedSize = AvailableSizes.FirstOrDefault();
+        }
+        ValidateQuantity();
+    }
+
+    private void SelectSize(string size)
+    {
+        selectedSize = size;
+        ValidateQuantity();
+    }
+
+    private bool HasStockForSize(string size)
+    {
+        return Variants.Any(x =>
+            (string.IsNullOrWhiteSpace(selectedColor) || string.Equals(x.Mau, selectedColor, StringComparison.OrdinalIgnoreCase))
+            && string.Equals(x.KichCo, size, StringComparison.OrdinalIgnoreCase)
+            && x.SoLuong > 0);
+    }
+
+    private void IncreaseQuantity()
+    {
+        if (SelectedVariant != null && Quantity < SelectedVariant.SoLuong)
+        {
+            Quantity++;
+        }
+    }
+
+    private void ValidateQuantity()
+    {
+        if (SelectedVariant != null)
+        {
+            if (SelectedVariant.SoLuong <= 0)
+            {
+                Quantity = 0;
+            }
+            else if (Quantity > SelectedVariant.SoLuong)
+            {
+                Quantity = SelectedVariant.SoLuong;
+            }
+            else if (Quantity <= 0 && SelectedVariant.SoLuong > 0)
+            {
+                Quantity = 1;
+            }
+        }
+    }
+
+    private void DecreaseQuantity()
+    {
+        if (Quantity > 1)
+        {
+            Quantity--;
+        }
+    }
+
+    private async Task AddToCartAsync()
+    {
+        string buyerId;
+        if (AuthState.IsAuthenticated)
+        {
+            buyerId = AuthState.UserId.ToString();
+        }
+        else
+        {
+            buyerId = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "buyer_id") ?? string.Empty;
+            if (string.IsNullOrEmpty(buyerId))
+            {
+                buyerId = Guid.NewGuid().ToString();
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "buyer_id", buyerId);
+            }
+        }
+        var selectedVariant = SelectedVariant;
+        if (selectedVariant == null)
+        {
+            await Swal.FireAsync(new SweetAlertOptions { Title = "Thông báo", Text = "Vui lòng chọn màu sắc và kích cỡ", Icon = SweetAlertIcon.Warning, Timer = 2000, ShowConfirmButton = false, Toast = true, Position = SweetAlertPosition.TopEnd });
+            return;
+        }
+
+        var productName = $"{currentProduct?.TenSP ?? "Sản phẩm"} ({selectedVariant.Mau}, {selectedVariant.KichCo})";
+        var productPrice = CurrentPrice > 0 ? CurrentPrice : selectedVariant.Gia;
+        var productImage = CurrentImage;
+        var variantId = selectedVariant.MaCTSP.ToString();
+
+        var basket = await BasketService.GetBasketAsync(buyerId) ?? new BasketDto { UserName = buyerId };
+
+        var existing = basket.Items.FirstOrDefault(x => x.ProductId == variantId);
+        if (existing != null)
+        {
+            var newTotal = existing.Quantity + Quantity;
+            if (newTotal > selectedVariant.SoLuong)
+            {
+                await Swal.FireAsync(new SweetAlertOptions { Title = "Vượt tồn kho", Text = $"Bạn đã có {existing.Quantity} sản phẩm này trong giỏ hàng. Không thể thêm tiếp vì vượt quá tồn kho ({selectedVariant.SoLuong}).", Icon = SweetAlertIcon.Warning, Timer = 3000, ShowConfirmButton = false, Toast = true, Position = SweetAlertPosition.TopEnd });
+                return;
+            }
+            existing.Quantity = newTotal;
+        }
+        else
+        {
+            if (Quantity > selectedVariant.SoLuong)
+            {
+                 await Swal.FireAsync(new SweetAlertOptions { Title = "Vượt tồn kho", Text = $"Không thể thêm vì vượt quá tồn kho ({selectedVariant.SoLuong}).", Icon = SweetAlertIcon.Warning, Timer = 2000, ShowConfirmButton = false, Toast = true, Position = SweetAlertPosition.TopEnd });
+                 return;
+            }
+            basket.Items.Add(new BasketItemDto
+            {
+                ProductId = variantId,
+                ProductName = productName,
+                Price = productPrice,
+                Quantity = Quantity,
+                ImageUrl = productImage
+            });
+        }
+
+        await BasketService.UpdateBasketAsync(basket);
+        await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "Đã thêm vào giỏ hàng!",
+            Text = productName,
+            Icon = SweetAlertIcon.Success,
+            Timer = 1500,
+            ShowConfirmButton = false,
+            Toast = true,
+            Position = SweetAlertPosition.TopEnd
+        });
+    }
+
+    private async Task BuyNowAsync()
+    {
+        await AddToCartAsync();
+        Navigation.NavigateTo("/cart");
+    }
+
+    private static ProductList.ProductDto MapToCard(SanPhamDto product)
+    {
+        var details = product.ChiTietSanPhams ?? new List<ChiTietSanPhamDto>();
+        var firstDetail = details.FirstOrDefault();
+        var colors = details
+            .Select(x => x.Mau)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new ProductList.ProductDto(
+            Id: product.Slug,
+            ImagePath: firstDetail?.Anh ?? "product1.jpg",
+            Title: product.TenSP,
+            Price: $"{(firstDetail?.Gia ?? 0):n0}₫",
+            BadgeText: "HÀNG MỚI",
+            Colors: colors.Length > 0 ? colors : ["#000000"],
+            Category: "",
+            CategoryId: product.MaDM,
+            LuotBan: product.LuotBan);
+    }
+
+    private static string FormatDiscountText(MaGiamGiaDto discount)
+        => discount.Loai == "PhanTram"
+            ? discount.SoTien.ToString("0") + "%"
+            : discount.SoTien.ToString("N0") + "đ";
+
+
+
+    private string FormatLuotBan(int count)
+    {
+        if (count >= 1000) return $"{count / 1000.0:0.#}k";
+        return count.ToString();
+    }
+}
+
+<style>
+    .breadcrumb-link {
+        color: #CBD5E1;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-block;
+    }
+
+    .breadcrumb-link:hover {
+        color: #0F172A;
+        transform: translateY(-1px);
+    }
+</style>

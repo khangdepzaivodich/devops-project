@@ -1,0 +1,309 @@
+@inject IJSRuntime JS
+@inject blazor_frontend.Services.IChatService ChatService
+@using System.Text.Json
+@using blazor_frontend.Models
+@using blazor_frontend.Services
+@inject blazor_frontend.Services.AuthState AuthState
+@implements IDisposable
+
+@if (isOpen)
+{
+    <div class="fixed bottom-20 right-6 w-80 h-96 bg-white border border-gray-200 rounded-lg shadow-xl flex flex-col z-50">
+        <!-- Chat header -->
+        <div class="bg-blue-600 text-white p-3 rounded-t-lg flex justify-between items-center group relative">
+            <h3 class="font-bold">Chat trực tuyến</h3>
+            <div class="flex gap-2 items-center">
+                <a href="/account/messages" class="text-white/80 hover:text-white" title="Mở trang tin nhắn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+                <button @onclick="ToggleChat" class="text-white/80 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+        <!-- Chat messages -->
+        <div id="widgetChatContainer" class="flex-1 p-3 overflow-y-auto bg-gray-50 flex flex-col gap-2 relative">
+
+            @if (messages != null && messages.Any())
+            {
+                @foreach (var msg in messages)
+                {
+                    <div class="flex @(msg.IsMine ? "flex-row-reverse" : "flex-row") items-end gap-2 mb-2">
+                        <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 border border-gray-200 bg-gray-100">
+                            <img src="@(string.IsNullOrEmpty(msg.Avatar) ? (msg.IsMine ? $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(AuthState.IsAuthenticated ? AuthState.HoTen : "Khách")}&background=random" : "https://ui-avatars.com/api/?name=Staff&background=random") : msg.Avatar)" 
+                                 class="w-full h-full object-cover" />
+                        </div>
+                        <div class="@(msg.IsMine ? "bg-blue-600 text-white rounded-l-lg rounded-tr-lg" : "bg-blue-100 text-blue-900 rounded-r-lg rounded-tl-lg") p-2 max-w-[75%] text-sm shadow-sm">
+                            @msg.Text
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <!-- Chat input -->
+        <div class="p-3 border-t flex gap-2">
+            <input type="text" @bind="newMessage" @onkeyup="HandleKeyUp" class="flex-1 border rounded-full px-3 py-1.5 focus:outline-none focus:border-blue-500 text-sm" placeholder="Nhập tin nhắn..." />
+            <button @onclick="SendMessage" class="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 w-8 h-8 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </div>
+    </div>
+}
+
+<button @onclick="ToggleChat" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 rounded-full shadow-lg flex items-center justify-center text-white z-50 hover:bg-blue-700 transition transform hover:scale-110">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+</button>
+
+@code {
+    private bool isOpen = false;
+    private string currentSessionId = "";
+    private string guestId = ""; // UUID định danh thiết bị
+    private string newMessage = "";
+    private string userAvatar = "";
+    private List<ChatMessage> messages = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Phân biệt Guest hay User
+        guestId = await JS.InvokeAsync<string>("localStorage.getItem", "chat_guest_id");
+        if (string.IsNullOrEmpty(guestId))
+        {
+            guestId = $"GUEST_{Guid.NewGuid().ToString().Substring(0, 8)}";
+            await JS.InvokeVoidAsync("localStorage.setItem", "chat_guest_id", guestId);
+        }
+
+        // 2. Đăng ký sự kiện và khởi tạo Service
+        ChatService.OnMessageReceived += HandleMessageReceived;
+        ChatService.OnSessionQueued += HandleSessionQueued;
+        ChatService.OnSessionAssigned += HandleSessionAssigned;
+        AuthState.AuthStateChanged += HandleAuthStateChanged;
+        await ChatService.InitializeAsync();
+
+        await InitializeSessionAsync();
+    }
+
+    private void HandleAuthStateChanged()
+    {
+        _ = InvokeAsync(async () => {
+            await InitializeSessionAsync();
+        });
+    }
+
+    private bool isInitializing = false;
+    private async Task InitializeSessionAsync()
+    {
+        if (isInitializing) return;
+        isInitializing = true;
+
+        try
+        {
+            // Ưu tiên lấy từ AuthState thay vì localStorage để tránh race condition khi vừa login
+            userAvatar = AuthState.AvatarUrl;
+            var userId = AuthState.UserId;
+            bool isAuthenticated = AuthState.IsAuthenticated;
+
+            // 3. Xử lý Session ID
+            var session = await JS.InvokeAsync<string?>("localStorage.getItem", "chat_session_id");
+
+            if (isAuthenticated)
+            {
+                // Bắt buộc xóa ID cũ để tránh dùng lại phiên khách
+                await JS.InvokeVoidAsync("localStorage.removeItem", "chat_session_id");
+                session = null;
+
+                // 1. LUÔN ƯU TIÊN tìm phiên cũ của User này trên server trước
+                var serverSession = await ChatService.GetLatestActiveSessionAsync(userId.ToString());
+                
+                if (serverSession != null)
+                {
+                    session = serverSession.Id.ToString();
+                    await JS.InvokeVoidAsync("localStorage.setItem", "chat_session_id", session);
+                }
+                else
+                {
+                    // 2. Nếu Server không có phiên nào active -> Tạo mới cho User (không dùng lại khách)
+                    session = await ChatService.CreateNewChatSessionAsync(userId.ToString(), "USER");
+                    if (!string.IsNullOrEmpty(session))
+                    {
+                        await JS.InvokeVoidAsync("localStorage.setItem", "chat_session_id", session);
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(session))
+            {
+                currentSessionId = "";
+                messages = new();
+            }
+            else
+            {
+                currentSessionId = session;
+
+                // Lấy lịch sử từ server
+                var serverMsgs = await ChatService.GetChatHistoryAsync(Guid.Parse(currentSessionId));
+                if (serverMsgs != null)
+                {
+                    messages = serverMsgs
+                        .Where(m => !m.IsInternalNote)
+                        .Select(m => new ChatMessage
+                        {
+                            Text = m.NoiDung,
+                            IsMine = m.SenderType == "USER" || m.SenderType == "GUEST",
+                            Timestamp = m.ThoiGianGui.ToLocalTime()
+                        }).ToList();
+                    await SaveMessages();
+                }
+
+                // Join vào room
+                await ChatService.JoinChatSessionAsync(currentSessionId);
+
+                // Nâng cấp phiên nếu đã login (đảm bảo backend sync đúng info)
+                await TryUpgradeSession();
+
+                await Task.Delay(300);
+                await ScrollToBottom();
+            }
+        }
+        finally
+        {
+            isInitializing = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void HandleMessageReceived(blazor_frontend.Models.ChatMessageDto tinNhan)
+    {
+        if (tinNhan.IsInternalNote) return; // Khách không bao giờ được thấy internal note
+
+        // Chỉ thêm tin nhắn nếu người gửi không phải là mình (GUEST hoặc USER)
+        if (tinNhan.SenderType != "GUEST" && tinNhan.SenderType != "USER")
+        {
+            messages.Add(new ChatMessage { 
+                Text = tinNhan.NoiDung, 
+                IsMine = false, 
+                Timestamp = tinNhan.ThoiGianGui.ToLocalTime(),
+                Avatar = tinNhan.SenderAvatar
+            });
+            _ = SaveMessages();
+            InvokeAsync(async () => {
+                StateHasChanged();
+                await Task.Delay(100);
+                await ScrollToBottom();
+            });
+        }
+    }
+
+    private void HandleSessionQueued()
+    {
+        // Overlay loading đã được gỡ bỏ theo yêu cầu của USER
+    }
+
+    private void HandleSessionAssigned(string sessionId, string staffId, string staffName)
+    {
+        InvokeAsync(() => {
+            messages.Add(new ChatMessage { Text = "Một tư vấn viên đã tham gia cuộc trò chuyện.", IsMine = false, Timestamp = DateTime.Now });
+            StateHasChanged();
+        });
+    }
+
+    private async Task TryUpgradeSession()
+    {
+        if (string.IsNullOrEmpty(currentSessionId) || ChatService.ConnectionState != Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Connected) return;
+
+        if (AuthState.IsAuthenticated)
+        {
+            await ChatService.UpgradeSessionAsync(currentSessionId, AuthState.UserId.ToString(), AuthState.HoTen, AuthState.AvatarUrl);
+        }
+    }
+
+    private async Task ToggleChat()
+    {
+        isOpen = !isOpen;
+
+        if (isOpen && string.IsNullOrEmpty(currentSessionId))
+        {
+            currentSessionId = await ChatService.CreateNewChatSessionAsync(guestId, "GUEST");
+            await JS.InvokeVoidAsync("localStorage.setItem", "chat_session_id", currentSessionId);
+            messages.Add(new ChatMessage { Text = "Chào bạn! Chúng tôi có thể giúp gì cho bạn hôm nay?", IsMine = false, Timestamp = DateTime.Now });
+            await SaveMessages();
+
+            // Không gọi TryUpgradeSession ở đây để tránh nâng cấp nhầm trước khi InitializeSessionAsync kịp xử lý
+        }
+
+        if (isOpen)
+        {
+            await Task.Delay(100);
+            await ScrollToBottom();
+        }
+    }
+
+    private async Task HandleKeyUp(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(newMessage))
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(newMessage)) return;
+
+        var textToSend = newMessage.Trim();
+        newMessage = "";
+
+        var avatar = AuthState.AvatarUrl;
+        messages.Add(new ChatMessage { Text = textToSend, IsMine = true, Timestamp = DateTime.Now, Avatar = avatar });
+        await SaveMessages();
+        
+        StateHasChanged();
+        await Task.Delay(50);
+        await ScrollToBottom();
+
+        if (ChatService.ConnectionState == Microsoft.AspNetCore.SignalR.Client.HubConnectionState.Connected && !string.IsNullOrWhiteSpace(currentSessionId))
+        {
+            bool isUser = AuthState.IsAuthenticated;
+
+            var tn = new blazor_frontend.Models.ChatMessageDto
+            {
+                MaPhien = Guid.Parse(currentSessionId),
+                SenderType = isUser ? "USER" : "GUEST",
+                SenderID = isUser ? AuthState.UserId : Guid.Empty,
+                SenderName = AuthState.IsAuthenticated ? AuthState.HoTen : "Khách",
+                SenderAvatar = avatar ?? "",
+                NoiDung = textToSend,
+                TrangThai = "sent"
+            };
+
+            await ChatService.SendMessageAsync(tn);
+        }
+    }
+
+    private async Task SaveMessages()
+    {
+        var json = JsonSerializer.Serialize(messages);
+        await JS.InvokeVoidAsync("localStorage.setItem", $"chat_history_{currentSessionId}", json);
+    }
+
+    private async Task ScrollToBottom()
+    {
+        try { await JS.InvokeVoidAsync("scrollToBottomById", "widgetChatContainer"); }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        ChatService.OnMessageReceived -= HandleMessageReceived;
+        ChatService.OnSessionQueued -= HandleSessionQueued;
+        ChatService.OnSessionAssigned -= HandleSessionAssigned;
+        AuthState.AuthStateChanged -= HandleAuthStateChanged;
+    }
+
+    public class ChatMessage
+    {
+        public string Text { get; set; } = "";
+        public bool IsMine { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Avatar { get; set; } = "";
+    }
+}

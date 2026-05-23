@@ -1,0 +1,37 @@
+@page "/admin"
+@inject NavigationManager NavigationManager
+@inject blazor_frontend.Services.IAuthService AuthService
+@inject blazor_frontend.Services.AuthState AuthState
+
+<div class="flex h-screen w-full items-center justify-center bg-gray-50">
+    <div class="flex flex-col items-center gap-4">
+        <div class="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+        <p class="text-gray-500 font-medium">Đang chuyển hướng đến trang quản trị...</p>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await AuthService.InitializeAsync();
+
+            if (!AuthState.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("/account/signin?returnUrl=/admin", replace: true);
+                return;
+            }
+
+            var role = AuthState.Role?.ToUpperInvariant();
+            if (role == "ADMIN" || role == "STAFF")
+            {
+                NavigationManager.NavigateTo("/admin/dashboard", replace: true);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/unauthorized", replace: true);
+            }
+        }
+    }
+}

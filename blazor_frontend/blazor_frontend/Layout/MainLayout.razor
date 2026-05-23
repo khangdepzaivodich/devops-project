@@ -1,0 +1,38 @@
+@inherits LayoutComponentBase
+@using blazor_frontend.Shared
+@inject NavigationManager Nav
+
+<div class="min-h-screen bg-gray-50 flex flex-col">
+    <LandingHeader CartCount="0" />
+
+    @if (!IsCartPage)
+    {
+        <Hero ImagePath="hero22.png" />
+    }
+
+    <main class="flex-1 container mx-auto px-4 py-8">
+        @Body
+    </main>
+
+    <LandingFooter />
+
+    @if (_isLoaded && AuthState?.Role != "ADMIN" && AuthState?.Role != "STAFF")
+    {
+        <ChatWidget />
+    }
+</div>
+
+@code {
+    private bool _isLoaded = false;
+    [Inject] private blazor_frontend.Services.AuthState AuthState { get; set; } = default!;
+    [Inject] private blazor_frontend.Services.IAuthService AuthService { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        _isLoaded = true;
+    }
+
+    private bool IsCartPage =>
+        Nav.ToBaseRelativePath(Nav.Uri).StartsWith("cart", StringComparison.OrdinalIgnoreCase);
+}
