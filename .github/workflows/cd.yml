@@ -142,6 +142,50 @@ jobs:
         description: "Deployment completed for environment Staging"
         color: 0xffff00
 
+  deploy-monitoring:
+    name: CD - Deploy Monitoring Stack
+    runs-on: ubuntu-latest
+    needs: deploy-staging        # chạy SAU khi deploy-staging xong
+    environment: staging
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy monitoring folder to Azure VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          source: "monitoring/*"          # copy toàn bộ folder monitoring/
+          target: "~/deploy-monitoring/"
+
+      - name: Deploy monitoring stack via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USERNAME }}
+          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          script: |
+            # Fix k3s permission (giống các job khác)
+            sudo chmod 644 /etc/rancher/k3s/k3s.yaml || true
+
+            cd ~/deploy-monitoring/monitoring
+            chmod +x deploy-monitoring.sh
+            ./deploy-monitoring.sh
+
+      - name: Discord Notification
+        if: always()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          title: "Monitoring Stack Deployment"
+          description: "Prometheus + Grafana + Loki deployed"
+          color: 0x00bfff
+          
   deploy-production:
     name: CD - Deploy Production
     runs-on: ubuntu-latest
@@ -290,3 +334,4 @@ jobs:
           for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service frontend; do
             kubectl rollout undo deployment/$svc -n production
           done
+  
