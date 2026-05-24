@@ -124,12 +124,13 @@ jobs:
           # Convert PascalCase to kebab-case (e.g., IdentityService -> identity-service)
           service_kebab=$(echo "$service_name" | sed -r 's/([a-z0-9])([A-Z])/\1-\2/g' | tr '[:upper:]' '[:lower:]')
           
-          echo "Building image for $service_kebab from $dir..."
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/$service_kebab:${{ github.sha }} -t ${{ secrets.ACR_LOGIN_SERVER }}/$service_kebab:latest "$dir"
-          
-          echo "Pushing $service_kebab..."
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$service_kebab:${{ github.sha }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/$service_kebab:latest
+          echo "Building and pushing image for $service_kebab from $dir with layer caching..."
+          docker buildx build --push \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/$service_kebab:${{ github.sha }} \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/$service_kebab:latest \
+            --cache-from type=gha,scope=$service_kebab \
+            --cache-to type=gha,mode=max,scope=$service_kebab \
+            "$dir"
         done
 
     - name: Discord Notification
