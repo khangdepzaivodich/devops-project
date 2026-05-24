@@ -39,17 +39,23 @@ kubectl create configmap grafana-dashboards \
 log_section "3. Deployments (Prometheus, Grafana, Loki, Alertmanager)"
 kubectl apply -f k8s/02-deployments.yaml
 
+# Restart để nhận configmap mới nếu có thay đổi
+kubectl rollout restart deployment/alertmanager -n monitoring 2>/dev/null || true
+kubectl rollout restart deployment/grafana -n monitoring 2>/dev/null || true
+
 log_section "4. DaemonSets (Node Exporter, Promtail)"
 kubectl apply -f k8s/03-daemonsets.yaml
 
-log_section "5. Chờ pods sẵn sàng..."
+log_section "5. Ingress Grafana"
+kubectl apply -f k8s/05-ingress.yaml
+
+log_section "6. Chờ pods sẵn sàng..."
 kubectl rollout status deployment/prometheus   -n monitoring --timeout=120s
 kubectl rollout status deployment/grafana      -n monitoring --timeout=120s
 kubectl rollout status deployment/loki         -n monitoring --timeout=120s
 kubectl rollout status deployment/alertmanager -n monitoring --timeout=120s
 
-log_section "6. Kết quả"
+log_section "7. Kết quả"
 kubectl get pods -n monitoring
 echo ""
-GRAFANA_IP=$(kubectl get svc grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "<pending>")
-echo "  Grafana: http://${GRAFANA_IP}:3000  (admin / DevOps@2024)"
+echo "  Grafana: http://<IP-public>/grafana  (admin / DevOps@2024)"
