@@ -1,0 +1,138 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'azure-k8s'
+        environment: 'production'
+    rule_files:
+      - /etc/prometheus/rules/*.yml
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager:9093
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - source_labels: [__address__]
+            regex: '(.*):10250'
+            replacement: '${1}:9100'
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics.kube-system.svc.cluster.local:8080']
+      - job_name: 'cadvisor'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+      - job_name: 'aspnet-services'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: service
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+data:
+  alerts.yml: |
+    groups:
+      - name: kubernetes.pod_alerts
+        rules:
+          - alert: PodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total[5m]) * 60 > 1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Pod {{ $labels.pod }} đang CrashLoopBackOff"
+              description: "Pod {{ $labels.pod }} restart > 1 lần/phút trong 5 phút."
+          - alert: PodNotReady
+            expr: kube_pod_status_ready{condition="true"} == 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod {{ $labels.pod }} không ở trạng thái Ready"
+              description: "Pod {{ $labels.pod }} chưa Ready trong 5 phút."
+          - alert: ServiceDown
+            expr: up{job="aspnet-services"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Service {{ $labels.service }} DOWN"
+              description: "Service {{ $labels.service }} không phản hồi."
+          - alert: NodeHighCPU
+            expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "CPU cao tại node {{ $labels.instance }}"
+              description: "CPU {{ $value | printf \"%.1f\" }}% > 80%."
+          - alert: NodeHighMemory
+            expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "RAM cao tại node {{ $labels.instance }}"
+              description: "RAM {{ $value | printf \"%.1f\" }}% > 80%."
+          - alert: HighHTTPErrorRate
+            expr: sum by(service) (rate(http_requests_received_total{status_code=~"5.."}[5m])) / sum by(service) (rate(http_requests_received_total[5m])) * 100 > 5
+            for: 3m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Tỷ lệ lỗi HTTP 5xx cao tại {{ $labels.service }}"
+              description: "{{ $labels.service }} có {{ $value | printf \"%.1f\" }}% request lỗi."
+---

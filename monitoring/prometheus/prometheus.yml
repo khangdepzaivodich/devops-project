@@ -1,0 +1,97 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'azure-k8s'
+    environment: 'production'
+
+# Load alert rules
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+# Alertmanager config
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # ─── Prometheus tự scrape chính nó ───────────────────────────────
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ─── Node Exporter (CPU / RAM / Disk của VM Azure) ────────────────
+  - job_name: 'node-exporter'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*):10250'
+        replacement: '${1}:9100'
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+
+  # ─── kube-state-metrics (trạng thái Pod / Deployment) ────────────
+  - job_name: 'kube-state-metrics'
+    static_configs:
+      - targets: ['kube-state-metrics.kube-system.svc.cluster.local:8080']
+
+  # ─── cAdvisor (CPU/RAM từng container) ───────────────────────────
+  - job_name: 'cadvisor'
+    kubernetes_sd_configs:
+      - role: node
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: true
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+  # ─── ASP.NET Microservices (scrape /metrics từng service) ─────────
+  - job_name: 'aspnet-services'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      # Chỉ scrape pod có annotation prometheus.io/scrape: "true"
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: service
+
+  # ─── Ingress NGINX (HTTP request metrics) ─────────────────────────
+  - job_name: 'ingress-nginx'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['ingress-nginx']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+        action: keep
+        regex: ingress-nginx

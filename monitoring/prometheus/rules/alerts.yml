@@ -1,0 +1,138 @@
+groups:
+  # ════════════════════════════════════════════════
+  #  POD & DEPLOYMENT ALERTS
+  # ════════════════════════════════════════════════
+  - name: kubernetes.pod_alerts
+    rules:
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[5m]) * 60 > 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} đang CrashLoopBackOff"
+          description: "Pod {{ $labels.pod }} trong namespace {{ $labels.namespace }} restart > 1 lần/phút trong 5 phút."
+
+      - alert: PodNotReady
+        expr: kube_pod_status_ready{condition="true"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod {{ $labels.pod }} không ở trạng thái Ready"
+          description: "Pod {{ $labels.pod }} (namespace: {{ $labels.namespace }}) chưa Ready trong 5 phút."
+
+      - alert: DeploymentReplicasMismatch
+        expr: kube_deployment_spec_replicas != kube_deployment_status_available_replicas
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Deployment {{ $labels.deployment }} thiếu replicas"
+          description: "Deployment {{ $labels.deployment }} muốn {{ $value }} replicas nhưng không đủ available."
+
+  # ════════════════════════════════════════════════
+  #  NODE RESOURCE ALERTS
+  # ════════════════════════════════════════════════
+  - name: node.resource_alerts
+    rules:
+      - alert: NodeHighCPU
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU cao tại node {{ $labels.instance }}"
+          description: "CPU usage {{ $value | printf \"%.1f\" }}% > 80% trong 5 phút."
+
+      - alert: NodeCriticalCPU
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU NGUY HIỂM tại node {{ $labels.instance }}"
+          description: "CPU usage {{ $value | printf \"%.1f\" }}% > 95%!"
+
+      - alert: NodeHighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RAM cao tại node {{ $labels.instance }}"
+          description: "RAM usage {{ $value | printf \"%.1f\" }}% > 80%."
+
+      - alert: NodeDiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk sắp đầy tại {{ $labels.instance }}"
+          description: "Disk usage {{ $value | printf \"%.1f\" }}% > 85%."
+
+  # ════════════════════════════════════════════════
+  #  HTTP / ASP.NET SERVICE ALERTS
+  # ════════════════════════════════════════════════
+  - name: aspnet.http_alerts
+    rules:
+      - alert: HighHTTPErrorRate
+        expr: |
+          sum by(service) (rate(http_requests_received_total{status_code=~"5.."}[5m]))
+          /
+          sum by(service) (rate(http_requests_received_total[5m])) * 100 > 5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tỷ lệ lỗi HTTP 5xx cao tại {{ $labels.service }}"
+          description: "{{ $labels.service }} có {{ $value | printf \"%.1f\" }}% request lỗi 5xx."
+
+      - alert: HighHTTPLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum by(service, le) (rate(http_request_duration_seconds_bucket[5m]))
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latency P95 cao tại {{ $labels.service }}"
+          description: "{{ $labels.service }} P95 latency = {{ $value | printf \"%.2f\" }}s > 2s."
+
+      - alert: ServiceDown
+        expr: up{job="aspnet-services"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.service }} DOWN"
+          description: "Service {{ $labels.service }} (pod: {{ $labels.pod }}) không phản hồi Prometheus."
+
+  # ════════════════════════════════════════════════
+  #  CONTAINER RESOURCE ALERTS
+  # ════════════════════════════════════════════════
+  - name: container.resource_alerts
+    rules:
+      - alert: ContainerHighMemory
+        expr: |
+          (container_memory_working_set_bytes{container!=""} /
+          container_spec_memory_limit_bytes{container!=""}) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.container }} dùng RAM cao"
+          description: "Container {{ $labels.container }} pod {{ $labels.pod }} dùng {{ $value | printf \"%.1f\" }}% memory limit."
+
+      - alert: ContainerHighCPU
+        expr: |
+          rate(container_cpu_usage_seconds_total{container!=""}[5m])
+          / container_spec_cpu_quota{container!=""} * container_spec_cpu_period{container!=""} * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.container }} dùng CPU cao"
+          description: "Container {{ $labels.container }} pod {{ $labels.pod }} dùng {{ $value | printf \"%.1f\" }}% CPU limit."
