@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ChatService.ChatAPI.Models;
 using ChatService.ChatAPI.Services;
+using ChatService.ChatAPI.Services.Interfaces;
 using ChatService.ChatAPI.DTOs;
 
 namespace ChatService.ChatAPI.Controllers
@@ -11,12 +12,12 @@ namespace ChatService.ChatAPI.Controllers
     // Đây là 1 API Test nhanh gọn
     public class ChatController : ControllerBase
     {
-        private readonly ChatMongoService _chatService;
-        private readonly ChatRedisService _redisService;
+        private readonly IChatMongoService _chatService;
+        private readonly IChatRedisService _redisService;
 
         public ChatController(
-            ChatMongoService chatService, 
-            ChatRedisService redisService)
+            IChatMongoService chatService, 
+            IChatRedisService redisService)
         {
             _chatService = chatService;
             _redisService = redisService;

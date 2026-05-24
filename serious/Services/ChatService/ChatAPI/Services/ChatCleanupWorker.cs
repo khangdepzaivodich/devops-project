@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using ChatService.ChatAPI.Services;
+using ChatService.ChatAPI.Services.Interfaces;
 using ChatService.ChatAPI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -46,7 +47,7 @@ namespace ChatService.ChatAPI.Services
         {
             using (var scope = _serviceProvider.CreateScope())
             {
-                var mongoService = scope.ServiceProvider.GetRequiredService<ChatMongoService>();
+                var mongoService = scope.ServiceProvider.GetRequiredService<IChatMongoService>();
                 var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<ChatHub>>();
 
                 // 1. XỬ LÝ PHIÊN KHÁCH (GUEST) - XÓA NẾU QUÁ 15P

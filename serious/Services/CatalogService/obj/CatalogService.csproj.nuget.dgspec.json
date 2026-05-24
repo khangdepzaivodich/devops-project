@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\CatalogService\\CatalogService.csproj": {}
+    "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\CatalogService\\CatalogService.csproj": {}
   },
   "projects": {
-    "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\CatalogService\\CatalogService.csproj": {
+    "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\CatalogService\\CatalogService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\CatalogService\\CatalogService.csproj",
+        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\CatalogService\\CatalogService.csproj",
         "projectName": "CatalogService",
-        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\CatalogService\\CatalogService.csproj",
+        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\CatalogService\\CatalogService.csproj",
         "packagesPath": "C:\\Users\\khang\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\CatalogService\\obj\\",
+        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\CatalogService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -89,6 +89,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[10.1.7, )"
+            },
+            "prometheus-net.AspNetCore": {
+              "target": "Package",
+              "version": "[8.2.1, )"
             }
           },
           "imports": [

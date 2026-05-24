@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using ChatService.ChatAPI.Models;
 using ChatService.ChatAPI.Services;
+using ChatService.ChatAPI.Services.Interfaces;
 
 namespace ChatService.ChatAPI
 {
     public class ChatHub : Hub
     {
-        private readonly ChatMongoService _chatService;
-        private readonly ChatRedisService _redisService;
+        private readonly IChatMongoService _chatService;
+        private readonly IChatRedisService _redisService;
 
-        public ChatHub(ChatMongoService chatService, ChatRedisService redisService)
+        public ChatHub(IChatMongoService chatService, IChatRedisService redisService)
         {
             _chatService = chatService;
             _redisService = redisService;

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\ChatService\\ChatService.csproj": {}
+    "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\ChatService\\ChatService.csproj": {}
   },
   "projects": {
-    "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\ChatService\\ChatService.csproj": {
+    "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\ChatService\\ChatService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\ChatService\\ChatService.csproj",
+        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\ChatService\\ChatService.csproj",
         "projectName": "ChatService",
-        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\ChatService\\ChatService.csproj",
+        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\ChatService\\ChatService.csproj",
         "packagesPath": "C:\\Users\\khang\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\ChatService\\obj\\",
+        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\ChatService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -69,6 +69,10 @@
             "StackExchange.Redis": {
               "target": "Package",
               "version": "[2.12.14, )"
+            },
+            "prometheus-net.AspNetCore": {
+              "target": "Package",
+              "version": "[8.2.1, )"
             }
           },
           "imports": [

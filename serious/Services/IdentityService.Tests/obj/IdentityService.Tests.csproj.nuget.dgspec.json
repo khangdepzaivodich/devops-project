@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj": {}
+    "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj": {}
   },
   "projects": {
-    "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj": {
+    "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj",
+        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj",
         "projectName": "IdentityService.Tests",
-        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj",
+        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService.Tests\\IdentityService.Tests.csproj",
         "packagesPath": "C:\\Users\\khang\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService.Tests\\obj\\",
+        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -32,8 +32,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService\\IdentityService.csproj": {
-                "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService\\IdentityService.csproj"
+              "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService\\IdentityService.csproj": {
+                "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService\\IdentityService.csproj"
               }
             }
           }
@@ -373,14 +373,14 @@
         }
       }
     },
-    "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService\\IdentityService.csproj": {
+    "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService\\IdentityService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService\\IdentityService.csproj",
+        "projectUniqueName": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService\\IdentityService.csproj",
         "projectName": "IdentityService",
-        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService\\IdentityService.csproj",
+        "projectPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService\\IdentityService.csproj",
         "packagesPath": "C:\\Users\\khang\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\dotnet_project\\serious\\Services\\IdentityService\\obj\\",
+        "outputPath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\IdentityService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -458,6 +458,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[10.1.7, )"
+            },
+            "prometheus-net.AspNetCore": {
+              "target": "Package",
+              "version": "[8.2.1, )"
             }
           },
           "imports": [

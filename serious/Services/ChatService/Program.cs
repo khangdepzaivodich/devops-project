@@ -10,9 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddSingleton<ChatService.ChatAPI.Services.ChatMongoService>();
+builder.Services.AddSingleton<ChatService.ChatAPI.Services.Interfaces.IChatMongoService, ChatService.ChatAPI.Services.ChatMongoService>();
 
-builder.Services.AddSingleton<ChatService.ChatAPI.Services.ChatRedisService>();
+builder.Services.AddSingleton<ChatService.ChatAPI.Services.Interfaces.IChatRedisService, ChatService.ChatAPI.Services.ChatRedisService>();
 
 // Đăng ký Worker
 builder.Services.AddHostedService<ChatService.ChatAPI.Services.ChatCleanupWorker>();

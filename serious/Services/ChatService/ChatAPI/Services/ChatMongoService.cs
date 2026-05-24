@@ -1,10 +1,11 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using ChatService.ChatAPI.Models;
+using ChatService.ChatAPI.Services.Interfaces;
 
 namespace ChatService.ChatAPI.Services
 {
-    public class ChatMongoService
+    public class ChatMongoService : IChatMongoService
     {
         private readonly IMongoCollection<PhienTroChuyen> _phienCollection;
         private readonly IMongoCollection<HoiThoai> _hoiThoaiCollection;
