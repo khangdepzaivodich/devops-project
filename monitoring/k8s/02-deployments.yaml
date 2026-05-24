@@ -222,17 +222,15 @@ spec:
             - containerPort: 3000
           env:
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "DevOps@2024"          # ← đổi password này!
+              value: "GRAFANA_ADMIN_PASSWORD_PLACEHOLDER"
             - name: GF_SECURITY_ADMIN_USER
-              value: "admin"
-            - name: GF_SERVER_ROOT_URL
-              value: "http://localhost:3000" # ← đổi thành IP Azure
+              value: "GRAFANA_ADMIN_USER_PLACEHOLDER"
             - name: GF_ALERTING_ENABLED
               value: "false"
             - name: GF_UNIFIED_ALERTING_ENABLED
               value: "true"
             - name: GF_SERVER_ROOT_URL
-              value: "%(protocol)s://%(domain)s/grafana"
+              value: "%(protocol)s://%(domain)s/grafana/"
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
               value: "true"
           volumeMounts:
