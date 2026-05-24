@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 using CatalogService;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -113,6 +114,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+//prometheus
+app.UseRouting();
+app.UseHttpMetrics();   // Tự động track HTTP request metrics
+app.MapMetrics(); 
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");

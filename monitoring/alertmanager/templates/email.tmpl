@@ -1,0 +1,44 @@
+{{ define "email.html" }}
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; }
+    .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 8px; overflow: hidden; }
+    .header { padding: 20px; color: white; }
+    .header.firing { background: #dc3545; }
+    .header.resolved { background: #28a745; }
+    .body { padding: 20px; }
+    .alert-item { border: 1px solid #dee2e6; border-radius: 4px; padding: 12px; margin: 10px 0; }
+    .label { display: inline-block; background: #e9ecef; border-radius: 3px; padding: 2px 6px; font-size: 12px; margin: 2px; }
+    .severity-critical { border-left: 4px solid #dc3545; }
+    .severity-warning { border-left: 4px solid #ffc107; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header {{ if eq .Status "firing" }}firing{{ else }}resolved{{ end }}">
+    <h2>
+      {{ if eq .Status "firing" }}🚨 Alert Firing{{ else }}✅ Alert Resolved{{ end }}
+    </h2>
+    <p>{{ .GroupLabels.alertname }} | {{ len .Alerts }} alert(s)</p>
+  </div>
+  <div class="body">
+    {{ range .Alerts }}
+    <div class="alert-item severity-{{ .Labels.severity }}">
+      <strong>{{ .Labels.alertname }}</strong><br>
+      <small>
+        {{ range $k, $v := .Labels }}
+        <span class="label">{{ $k }}={{ $v }}</span>
+        {{ end }}
+      </small>
+      <p>{{ .Annotations.summary }}</p>
+      <p><em>{{ .Annotations.description }}</em></p>
+      {{ if .StartsAt }}<p><small>Started: {{ .StartsAt.Format "2006-01-02 15:04:05" }}</small></p>{{ end }}
+    </div>
+    {{ end }}
+  </div>
+</div>
+</body>
+</html>
+{{ end }}

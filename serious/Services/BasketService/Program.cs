@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 using BasketService;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +91,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+//prometheus
+app.UseRouting();
+app.UseHttpMetrics();   // Tự động track HTTP request metrics
+app.MapMetrics(); 
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");

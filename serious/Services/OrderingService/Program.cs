@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 using OrderingService;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,6 +115,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
+//prometheus
+app.UseRouting();
+app.UseHttpMetrics();
+app.MapMetrics();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
