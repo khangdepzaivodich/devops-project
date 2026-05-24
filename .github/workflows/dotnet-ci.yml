@@ -23,6 +23,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
 
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -34,6 +36,7 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
+        cache: true 
 
     - name: Cache SonarCloud packages
       uses: actions/cache@v4
@@ -92,13 +95,25 @@ jobs:
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
 
-    - name: Build and push all Microservices
+    - name: Build and push changed Microservices
       run: |
+        BUILD_ALL=false
+        # Nếu thư mục dùng chung (BuildingBlocks) bị thay đổi hoặc chạy thủ công thì build tất cả
+        if ! git diff --quiet HEAD^ HEAD -- "BuildingBlocks" || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "Shared library changed or manual run. Building ALL services."
+          BUILD_ALL=true
+        fi
+
         # Loop through all subdirectories in the Services folder
         for dir in Services/*/; do
           # Check if Dockerfile exists in this directory, skip if not (e.g., skip .Tests projects)
           if [ ! -f "${dir}Dockerfile" ]; then
-            echo "Skipping $dir (No Dockerfile found)"
+            continue
+          fi
+          
+          # Check for changes in the specific service directory
+          if [ "$BUILD_ALL" = false ] && git diff --quiet HEAD^ HEAD -- "$dir"; then
+            echo "Skipping $dir (No code changes detected)"
             continue
           fi
           
