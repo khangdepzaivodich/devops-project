@@ -245,7 +245,7 @@ data:
     receivers:
       - name: 'discord-receiver'
         webhook_configs:
-          - url: '${{ secrets.DISCORD_WEBHOOK }}'
+          - url: 'DISCORD_WEBHOOK_PLACEHOLDER'
             send_resolved: true
     inhibit_rules:
       - source_matchers:

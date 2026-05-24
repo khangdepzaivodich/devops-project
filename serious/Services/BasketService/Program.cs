@@ -104,7 +104,7 @@ app.MapControllers();
 
 app.Run();
 
-// Helper để lấy RSA Public Key cho việc xác thực nha mn nè
+// Helper để lấy RSA Public Key cho việc xác thực nha mn nè!
 static SecurityKey GetIssuerSigningKey(JwtSettings settings)
 {
     if (string.IsNullOrEmpty(settings.RsaPublicKey))
