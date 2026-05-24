@@ -1,0 +1,72 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # ─── Thu thập log từ tất cả Pod trong cluster ─────────────────────
+  - job_name: kubernetes-pods
+    kubernetes_sd_configs:
+      - role: pod
+    pipeline_stages:
+      # Parse JSON log nếu có (ASP.NET structured logging)
+      - json:
+          expressions:
+            level: level
+            message: message
+            timestamp: timestamp
+            requestId: RequestId
+            requestPath: RequestPath
+            statusCode: StatusCode
+      # Map log level
+      - labels:
+          level:
+          requestPath:
+          statusCode:
+      # Chuyển timestamp từ log
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+    relabel_configs:
+      # Chỉ lấy pod đang chạy
+      - source_labels: [__meta_kubernetes_pod_phase]
+        action: keep
+        regex: Running
+
+      # Thêm labels hữu ích
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: app
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        target_label: container
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        target_label: node
+
+      # Path log file
+      - source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
+        separator: /
+        target_label: __path__
+        replacement: /var/log/pods/*$1/*.log
+
+  # ─── System logs từ các node ──────────────────────────────────────
+  - job_name: kubernetes-nodes
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          __path__: /var/log/*.log
+    pipeline_stages:
+      - regex:
+          expression: '(?P<timestamp>\S+ \S+) (?P<level>\w+) (?P<message>.*)'
+      - labels:
+          level:
