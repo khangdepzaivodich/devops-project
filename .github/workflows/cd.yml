@@ -175,6 +175,10 @@ jobs:
             # Inject Discord webhook URL vào configmap trước khi apply
             sed -i "s|DISCORD_WEBHOOK_PLACEHOLDER|${{ secrets.DISCORD_WEBHOOK }}|g" k8s/01-configmaps.yaml
 
+            # Inject Grafana credentials
+            sed -i "s|GRAFANA_ADMIN_PASSWORD_PLACEHOLDER|${{ secrets.GRAFANA_ADMIN_PASSWORD }}|g" k8s/02-deployments.yaml
+            sed -i "s|GRAFANA_ADMIN_USER_PLACEHOLDER|${{ secrets.GRAFANA_ADMIN_USER }}|g" k8s/02-deployments.yaml
+
             chmod +x deploy-monitoring.sh
             ./deploy-monitoring.sh
       - name: Discord Notification

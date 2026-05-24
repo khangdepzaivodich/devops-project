@@ -3,13 +3,11 @@ kind: Ingress
 metadata:
   name: monitoring-ingress
   namespace: monitoring
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
   - http:
       paths:
-      - path: /grafana(/|$)(.*)
+      - path: /grafana
         pathType: Prefix
         backend:
           service:
