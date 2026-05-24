@@ -68,7 +68,7 @@ jobs:
           /d:sonar.host.url="$SONAR_HOST" \
           $SONAR_ORG_ARG \
           /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
-
+          /d:sonar.cpd.exclusions="**/Program.cs"
     - name: Build
       run: dotnet build serious.slnx --no-restore
 
