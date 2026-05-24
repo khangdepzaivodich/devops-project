@@ -25,12 +25,37 @@ jobs:
   deploy-staging:
     name: CD - Deploy Staging
     runs-on: ubuntu-latest
-    environment: staging
+    environment: 
+      name: staging
+      url: http://www.test.seriousclothing.huynb.io.vn/
     if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy') }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Determine changed services
+      id: changed_services
+      run: |
+        ALL_SERVICES="identity-service catalog-service ordering-service basket-service discount-service chat-service frontend"
+        SERVICES_TO_RESTART=""
+        if ! git diff --quiet HEAD^ HEAD -- "serious/BuildingBlocks" || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          SERVICES_TO_RESTART=$ALL_SERVICES
+        else
+          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service; do
+            dir_name=$(echo "$svc" | awk -F'-' '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))} 1' OFS='')
+            if ! git diff --quiet HEAD^ HEAD -- "serious/Services/$dir_name"; then
+              SERVICES_TO_RESTART="$SERVICES_TO_RESTART $svc"
+            fi
+          done
+          if ! git diff --quiet HEAD^ HEAD -- "blazor_frontend"; then
+            SERVICES_TO_RESTART="$SERVICES_TO_RESTART frontend"
+          fi
+        fi
+        SERVICES_TO_RESTART=$(echo $SERVICES_TO_RESTART | xargs)
+        echo "SERVICES_TO_RESTART=$SERVICES_TO_RESTART" >> $GITHUB_ENV
 
     - name: Generate .env file from Secrets
       env:
@@ -53,7 +78,7 @@ jobs:
         CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
         CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
         CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-        FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        FRONTEND_URL: http://www.test.seriousclothing.huynb.io.vn/
       run: |
         cat <<EOF > .env.deploy
         IDENTITY_DB=$IDENTITY_DB
@@ -89,7 +114,10 @@ jobs:
 
     - name: Deploy to K3s Staging via SSH
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        SERVICES_TO_RESTART: ${{ env.SERVICES_TO_RESTART }}
       with:
+        envs: SERVICES_TO_RESTART
         host: ${{ secrets.AZURE_VM_HOST }}
         username: ${{ secrets.AZURE_VM_USERNAME }}
         key: ${{ secrets.AZURE_VM_SSH_KEY }}
@@ -123,15 +151,19 @@ jobs:
           kubectl apply -f frontend/ -n staging
           kubectl apply -f ingress/ -n staging
           
-          # Force restart all deployments so they pick up any new Secret changes
-          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service frontend; do
-            kubectl rollout restart deployment/$svc -n staging
-          done
-          
-          # Check rollout status for all deployments
-          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service frontend; do
-            kubectl rollout status deployment/$svc -n staging
-          done
+          # Force restart ONLY changed deployments
+          if [ -n "$SERVICES_TO_RESTART" ]; then
+            for svc in $SERVICES_TO_RESTART; do
+              kubectl rollout restart deployment/$svc -n staging
+            done
+            
+            # Check rollout status for changed deployments
+            for svc in $SERVICES_TO_RESTART; do
+              kubectl rollout status deployment/$svc -n staging
+            done
+          else
+            echo "No services to restart."
+          fi
           
           # Remove the temporary .env file from the server for security
           rm -f ~/deploy-staging/.env.deploy
@@ -143,7 +175,7 @@ jobs:
         webhook: ${{ secrets.DISCORD_WEBHOOK }}
         status: ${{ job.status }}
         title: "CD Deployment Status (Staging)"
-        description: "Deployment completed for environment Staging"
+        description: "Deployment completed for environment Staging.\n🌐 **URL:** http://www.test.seriousclothing.huynb.io.vn/"
         color: 0xffff00
 
 
@@ -154,12 +186,36 @@ jobs:
     needs: deploy-staging
     environment: 
       name: production
+      url: http://www.seriousclothing.huynb.io.vn/
       # Note: Manual approval should be enabled in GitHub Settings -> Environments -> production
     if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'deploy') }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Determine changed services
+      id: changed_services
+      run: |
+        ALL_SERVICES="identity-service catalog-service ordering-service basket-service discount-service chat-service frontend"
+        SERVICES_TO_RESTART=""
+        if ! git diff --quiet HEAD^ HEAD -- "serious/BuildingBlocks" || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          SERVICES_TO_RESTART=$ALL_SERVICES
+        else
+          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service; do
+            dir_name=$(echo "$svc" | awk -F'-' '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))} 1' OFS='')
+            if ! git diff --quiet HEAD^ HEAD -- "serious/Services/$dir_name"; then
+              SERVICES_TO_RESTART="$SERVICES_TO_RESTART $svc"
+            fi
+          done
+          if ! git diff --quiet HEAD^ HEAD -- "blazor_frontend"; then
+            SERVICES_TO_RESTART="$SERVICES_TO_RESTART frontend"
+          fi
+        fi
+        SERVICES_TO_RESTART=$(echo $SERVICES_TO_RESTART | xargs)
+        echo "SERVICES_TO_RESTART=$SERVICES_TO_RESTART" >> $GITHUB_ENV
 
     - name: Generate .env file from Secrets
       env:
@@ -182,7 +238,7 @@ jobs:
         CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
         CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
         CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-        FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+        FRONTEND_URL: http://www.seriousclothing.huynb.io.vn/
       run: |
         cat <<EOF > .env.deploy
         IDENTITY_DB=$IDENTITY_DB
@@ -218,7 +274,10 @@ jobs:
 
     - name: Deploy to K3s Production via SSH
       uses: appleboy/ssh-action@v1.0.3
+      env:
+        SERVICES_TO_RESTART: ${{ env.SERVICES_TO_RESTART }}
       with:
+        envs: SERVICES_TO_RESTART
         host: ${{ secrets.AZURE_VM_HOST }}
         username: ${{ secrets.AZURE_VM_USERNAME }}
         key: ${{ secrets.AZURE_VM_SSH_KEY }}
@@ -252,15 +311,19 @@ jobs:
           kubectl apply -f frontend/ -n production
           kubectl apply -f ingress/ -n production
           
-          # Force restart all deployments so they pick up any new Secret changes
-          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service frontend; do
-            kubectl rollout restart deployment/$svc -n production
-          done
-          
-          # Check rollout status for all deployments
-          for svc in identity-service catalog-service ordering-service basket-service discount-service chat-service frontend; do
-            kubectl rollout status deployment/$svc -n production
-          done
+          # Force restart ONLY changed deployments
+          if [ -n "$SERVICES_TO_RESTART" ]; then
+            for svc in $SERVICES_TO_RESTART; do
+              kubectl rollout restart deployment/$svc -n production
+            done
+            
+            # Check rollout status for changed deployments
+            for svc in $SERVICES_TO_RESTART; do
+              kubectl rollout status deployment/$svc -n production
+            done
+          else
+            echo "No services to restart."
+          fi
           
           # Remove the temporary .env file from the server for security
           rm -f ~/deploy-production/.env.deploy
@@ -272,7 +335,7 @@ jobs:
         webhook: ${{ secrets.DISCORD_WEBHOOK }}
         status: ${{ job.status }}
         title: "CD Deployment Status"
-        description: "Deployment completed for environment Production"
+        description: "Deployment completed for environment Production.\n🌐 **URL:** http://www.seriousclothing.huynb.io.vn/"
         color: 0xff00ff
 
 
