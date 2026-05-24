@@ -41,7 +41,14 @@ builder.Services.AddControllers();
 var redisConn = builder.Configuration["Redis:ConnectionString"] 
                 ?? builder.Configuration.GetConnectionString("Redis");
 
-builder.Services.AddSignalR().AddStackExchangeRedis(redisConn);
+if (!string.IsNullOrEmpty(redisConn) && !redisConn.Contains("<your-redis-endpoint>") && !redisConn.Contains("YOUR_REDIS_CONNECTION_STRING"))
+{
+    builder.Services.AddSignalR().AddStackExchangeRedis(redisConn);
+}
+else
+{
+    builder.Services.AddSignalR();
+}
 
 // -------------------------------------------------
 
@@ -124,4 +131,6 @@ static SecurityKey GetIssuerSigningKey(JwtSettings settings)
     rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(settings.RsaPublicKey), out _);
     return new RsaSecurityKey(rsa);
 }
+
+public partial class Program { }
 

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Xr5g+YQamWs=",
+  "dgSpecHash": "dNB3ASGrHpE=",
   "success": true,
   "projectFilePath": "C:\\Users\\khang\\OneDrive\\Desktop\\devops - Copy\\serious\\Services\\OrderingService\\OrderingService.csproj",
   "expectedPackageFiles": [
@@ -24,6 +24,7 @@
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.6\\microsoft.entityframeworkcore.abstractions.10.0.6.nupkg.sha512",
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\10.0.6\\microsoft.entityframeworkcore.analyzers.10.0.6.nupkg.sha512",
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.entityframeworkcore.design\\10.0.6\\microsoft.entityframeworkcore.design.10.0.6.nupkg.sha512",
+    "C:\\Users\\khang\\.nuget\\packages\\microsoft.entityframeworkcore.inmemory\\10.0.6\\microsoft.entityframeworkcore.inmemory.10.0.6.nupkg.sha512",
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\10.0.6\\microsoft.entityframeworkcore.relational.10.0.6.nupkg.sha512",
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\10.0.6\\microsoft.entityframeworkcore.sqlserver.10.0.6.nupkg.sha512",
     "C:\\Users\\khang\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\10.0.6\\microsoft.entityframeworkcore.tools.10.0.6.nupkg.sha512",

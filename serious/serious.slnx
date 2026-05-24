@@ -12,5 +12,6 @@
     <Project Path="Services/ChatService.Tests/ChatService.Tests.csproj" />
     <Project Path="Services/DiscountService.Tests/DiscountService.Tests.csproj" />
     <Project Path="Services/OrderingService.Tests/OrderingService.Tests.csproj" />
+    <Project Path="Services/IntegrationTests/IntegrationTests.csproj" />
   </Folder>
 </Solution>

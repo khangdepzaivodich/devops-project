@@ -70,7 +70,16 @@ builder.Services.AddHttpClient("DiscountService", client =>
 
 // Register DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (builder.Configuration["UseInMemoryDatabase"] == "true")
+    {
+        options.UseInMemoryDatabase("OrderingDb_Memory");
+    }
+    else
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
+});
 
 // Register Services
 builder.Services.AddScoped<IDonHangService, DonHangService>();
@@ -81,29 +90,36 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     
-    // 1. Chạy Migration chuẩn
-    dbContext.Database.Migrate();
-
-    // 2. [HACK FIX] Đảm bảo các cột missing được thêm vào nếu Migration bị lag
-    try 
+    if (dbContext.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
     {
-        var conn = dbContext.Database.GetDbConnection();
-        if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync();
-        
-        using (var command = conn.CreateCommand())
-        {
-            // Kiểm tra và thêm HoTen
-            command.CommandText = "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DonHangs') AND name = 'HoTen') ALTER TABLE DonHangs ADD HoTen nvarchar(150) NOT NULL DEFAULT '';";
-            await command.ExecuteNonQueryAsync();
+        // 1. Chạy Migration chuẩn
+        dbContext.Database.Migrate();
 
-            // Kiểm tra và thêm SoDienThoai
-            command.CommandText = "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DonHangs') AND name = 'SoDienThoai') ALTER TABLE DonHangs ADD SoDienThoai nvarchar(20) NOT NULL DEFAULT '';";
-            await command.ExecuteNonQueryAsync();
+        // 2. [HACK FIX] Đảm bảo các cột missing được thêm vào nếu Migration bị lag
+        try 
+        {
+            var conn = dbContext.Database.GetDbConnection();
+            if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync();
+            
+            using (var command = conn.CreateCommand())
+            {
+                // Kiểm tra và thêm HoTen
+                command.CommandText = "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DonHangs') AND name = 'HoTen') ALTER TABLE DonHangs ADD HoTen nvarchar(150) NOT NULL DEFAULT '';";
+                await command.ExecuteNonQueryAsync();
+
+                // Kiểm tra và thêm SoDienThoai
+                command.CommandText = "IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DonHangs') AND name = 'SoDienThoai') ALTER TABLE DonHangs ADD SoDienThoai nvarchar(20) NOT NULL DEFAULT '';";
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Manual schema fix failed (might already exist): " + ex.Message);
         }
     }
-    catch (Exception ex)
+    else
     {
-        Console.WriteLine("Manual schema fix failed (might already exist): " + ex.Message);
+        dbContext.Database.EnsureCreated();
     }
 }
 
@@ -137,5 +153,7 @@ static SecurityKey GetIssuerSigningKey(JwtSettings settings)
     rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(settings.RsaPublicKey), out _);
     return new RsaSecurityKey(rsa);
 }
+
+public partial class Program { }
 
 
