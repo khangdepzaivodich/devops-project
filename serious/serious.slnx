@@ -8,5 +8,10 @@
     <Project Path="Services/OrderingService/OrderingService.csproj" />
     <Project Path="Services/IdentityService.Tests/IdentityService.Tests.csproj" />
     <Project Path="Services/CatalogService.Tests/CatalogService.Tests.csproj" />
+    <Project Path="Services/BasketService.Tests/BasketService.Tests.csproj" />
+    <Project Path="Services/ChatService.Tests/ChatService.Tests.csproj" />
+    <Project Path="Services/DiscountService.Tests/DiscountService.Tests.csproj" />
+    <Project Path="Services/OrderingService.Tests/OrderingService.Tests.csproj" />
+    <Project Path="Services/IntegrationTests/IntegrationTests.csproj" />
   </Folder>
 </Solution>

@@ -117,3 +117,5 @@ static SecurityKey GetIssuerSigningKey(JwtSettings settings)
     return new RsaSecurityKey(rsa);
 }
 
+public partial class Program { }
+

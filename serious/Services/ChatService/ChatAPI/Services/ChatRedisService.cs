@@ -1,8 +1,9 @@
 using StackExchange.Redis;
+using ChatService.ChatAPI.Services.Interfaces;
 
 namespace ChatService.ChatAPI.Services
 {
-    public class ChatRedisService
+    public class ChatRedisService : IChatRedisService
     {
         private readonly IConnectionMultiplexer _redis;
         private readonly IDatabase _db;

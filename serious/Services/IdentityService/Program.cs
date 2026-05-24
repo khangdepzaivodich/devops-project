@@ -46,7 +46,14 @@ builder.Services.AddControllers();
 // =====================
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    if (builder.Configuration["UseInMemoryDatabase"] == "true")
+    {
+        options.UseInMemoryDatabase("IdentityDb_Memory");
+    }
+    else
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }
     options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 });
 
@@ -114,7 +121,14 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    if (dbContext.Database.ProviderName != "Microsoft.EntityFrameworkCore.InMemory")
+    {
+        dbContext.Database.Migrate();
+    }
+    else
+    {
+        dbContext.Database.EnsureCreated();
+    }
     await IdentitySeeder.SeedDefaultAdminAsync(dbContext);
 }
 
@@ -165,3 +179,5 @@ static SecurityKey GetIssuerSigningKey(JwtSettings settings)
     rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(settings.RsaPublicKey), out _);
     return new RsaSecurityKey(rsa);
 }
+
+public partial class Program { }

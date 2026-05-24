@@ -10,9 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddSingleton<ChatService.ChatAPI.Services.ChatMongoService>();
+builder.Services.AddSingleton<ChatService.ChatAPI.Services.Interfaces.IChatMongoService, ChatService.ChatAPI.Services.ChatMongoService>();
 
-builder.Services.AddSingleton<ChatService.ChatAPI.Services.ChatRedisService>();
+builder.Services.AddSingleton<ChatService.ChatAPI.Services.Interfaces.IChatRedisService, ChatService.ChatAPI.Services.ChatRedisService>();
 
 // Đăng ký Worker
 builder.Services.AddHostedService<ChatService.ChatAPI.Services.ChatCleanupWorker>();
@@ -41,7 +41,14 @@ builder.Services.AddControllers();
 var redisConn = builder.Configuration["Redis:ConnectionString"] 
                 ?? builder.Configuration.GetConnectionString("Redis");
 
-builder.Services.AddSignalR().AddStackExchangeRedis(redisConn);
+if (!string.IsNullOrEmpty(redisConn) && !redisConn.Contains("<your-redis-endpoint>") && !redisConn.Contains("YOUR_REDIS_CONNECTION_STRING"))
+{
+    builder.Services.AddSignalR().AddStackExchangeRedis(redisConn);
+}
+else
+{
+    builder.Services.AddSignalR();
+}
 
 // -------------------------------------------------
 
@@ -124,4 +131,6 @@ static SecurityKey GetIssuerSigningKey(JwtSettings settings)
     rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(settings.RsaPublicKey), out _);
     return new RsaSecurityKey(rsa);
 }
+
+public partial class Program { }
 
