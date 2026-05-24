@@ -17,6 +17,10 @@ on:
         - deploy
         - rollback
 
+concurrency:
+  group: cd-pipeline
+  cancel-in-progress: true
+
 jobs:
   deploy-staging:
     name: CD - Deploy Staging
