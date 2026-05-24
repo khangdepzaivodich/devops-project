@@ -1,2 +1,7 @@
 .vscode
 .env
+*.obj
+
+# Build outputs
+**/bin/
+**/obj/
