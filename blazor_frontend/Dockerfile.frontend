@@ -12,6 +12,7 @@ COPY blazor_frontend.slnx ./
 COPY blazor_frontend/blazor_frontend.csproj blazor_frontend/
 RUN dotnet restore blazor_frontend.slnx
 
+
 # Copy the rest of the source code
 COPY . .
 
