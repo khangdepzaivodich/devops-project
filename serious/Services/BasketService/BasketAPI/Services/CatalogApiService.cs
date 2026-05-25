@@ -56,7 +56,7 @@ namespace BasketService.BasketAPI.Services
             }
             catch (Exception)
             {
-                // Ignored
+                // Ignored!
             }
             return null;
         }
