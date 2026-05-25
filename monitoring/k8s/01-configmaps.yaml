@@ -189,9 +189,13 @@ data:
     clients:
       - url: http://loki:3100/loki/api/v1/push
     scrape_configs:
-      - job_name: kubernetes-pods
-        kubernetes_sd_configs:
-          - role: pod
+      - job_name: kubernetes-containers
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: kubernetes-containers
+              __path__: /var/log/containers/*.log
         pipeline_stages:
           - json:
               expressions:
@@ -199,22 +203,17 @@ data:
                 message: message
           - labels:
               level:
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_phase]
-            action: keep
-            regex: Running
-          - source_labels: [__meta_kubernetes_namespace]
-            target_label: namespace
-          - source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - source_labels: [__meta_kubernetes_pod_container_name]
-            target_label: container
-          - source_labels: [__meta_kubernetes_pod_name, __meta_kubernetes_namespace, __meta_kubernetes_pod_container_name]
-            separator: _
-            target_label: __path__
-            replacement: /var/log/containers/*$1*.log
+          - regex:
+              expression: '^/var/log/containers/(?P<pod>[^_]+)_(?P<namespace>[^_]+)_(?P<container>.+)-[a-f0-9]+\.log$'
+              source: filename
+          - template:
+              source: app
+              template: '{{ .container }}'
+          - labels:
+              pod:
+              namespace:
+              container:
+              app:
 ---
 apiVersion: v1
 kind: ConfigMap
