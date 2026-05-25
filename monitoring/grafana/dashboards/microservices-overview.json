@@ -80,7 +80,7 @@
       "type": "timeseries",
       "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
       "targets": [{
-        "expr": "rate(kube_pod_container_status_restarts_total{namespace='staging'}[5m]) * 60",
+        "expr": "rate(kube_pod_container_status_restarts_total{namespace=~'staging|production'}[5m]) * 60",
         "legendFormat": "{{pod}}"
       }],
       "fieldConfig": { "defaults": { "unit": "short" } }
@@ -137,7 +137,7 @@
       "type": "timeseries",
       "gridPos": { "x": 16, "y": 16, "w": 8, "h": 8 },
       "targets": [{
-        "expr": "sum by(pod) (container_memory_working_set_bytes{namespace='staging', container!=''}) / 1024 / 1024",
+        "expr": "sum by(pod) (container_memory_working_set_bytes{namespace=~'staging|production', container!=''}) / 1024 / 1024",
         "legendFormat": "{{pod}}"
       }],
       "fieldConfig": { "defaults": { "unit": "MB" } }
