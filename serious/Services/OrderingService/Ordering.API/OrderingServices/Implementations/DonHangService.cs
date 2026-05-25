@@ -23,7 +23,7 @@ namespace OrderingService.Ordering.API.OrderingServices.Implementations
             _httpClientFactory = httpClientFactory;
         }
 
-        // DTOs phụ để nhận dữ liệu từ Catalog
+        // DTOs phụ để nhận dữ liệu từ Catalog !k
         private class ChiTietSanPhamResponse { public Guid MaSP { get; set; } public decimal Gia { get; set; } }
         private class SanPhamResponse { public Guid MaSP { get; set; } public Guid MaDM { get; set; } }
         private class DanhMucResponse { public Guid MaDM { get; set; } public Guid MaLDM { get; set; } }

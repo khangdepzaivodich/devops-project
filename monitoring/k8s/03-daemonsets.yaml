@@ -117,7 +117,7 @@ spec:
               mountPath: /var/log
               readOnly: true
             - name: varlibdockercontainers
-              mountPath: /var/lib/docker/containers
+              mountPath: /var/log/containers
               readOnly: true
           resources:
             requests:
@@ -135,4 +135,4 @@ spec:
             path: /var/log
         - name: varlibdockercontainers
           hostPath:
-            path: /var/lib/docker/containers
+            path: /var/log/containers

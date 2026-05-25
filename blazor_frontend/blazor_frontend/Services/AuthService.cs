@@ -70,7 +70,7 @@ namespace blazor_frontend.Services
             }
             catch
             {
-                // If deserialization fails, return a generic error or based on status
+                // If deserialization fails, return a generic error or based on status !
                 return new RegisterResponse 
                 { 
                     Success = response.IsSuccessStatusCode, 
